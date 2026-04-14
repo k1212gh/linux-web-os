@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+dist/
+build/
+
+# Node
+node_modules/
+frontend/node_modules/
+
+# Built frontend (served from backend/static)
+backend/static/
+
+# Secrets — NEVER commit
+backend/.env.json
+.env
+*.key
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors
+.idea/
+.vscode/settings.json
+*.swp
