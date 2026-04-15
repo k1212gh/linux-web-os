@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>Linux Web OS — 보안·서비스·UX 검토</title>
+<style>
+  :root {
+    --bg: #0d1117; --panel: #161b22; --border: #30363d;
+    --fg: #c9d1d9; --muted: #8b949e; --accent: #58a6ff;
+    --critical: #f85149; --high: #ff9e3f; --medium: #e3b341; --low: #56d364;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body { font: 14px/1.55 -apple-system, 'Segoe UI', system-ui, sans-serif;
+         background: var(--bg); color: var(--fg); padding: 24px; max-width: 1100px; margin: 0 auto; }
+  header { display: flex; align-items: baseline; gap: 14px; margin-bottom: 20px; flex-wrap: wrap; }
+  header h1 { margin: 0; font-size: 18px; font-weight: 500; }
+  header .meta { color: var(--muted); font-size: 12px; margin-left: auto; }
+  .summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+             gap: 12px; margin-bottom: 20px; }
+  .stat { background: var(--panel); border: 1px solid var(--border);
+          border-radius: 8px; padding: 14px 16px; cursor: pointer;
+          transition: border-color 0.15s; }
+  .stat:hover { border-color: var(--accent); }
+  .stat.selected { border-color: var(--accent); background: rgba(88,166,255,0.05); }
+  .stat .label { font-size: 11px; color: var(--muted); text-transform: uppercase;
+                 letter-spacing: 0.05em; }
+  .stat .value { font-size: 26px; font-weight: 500; margin-top: 4px;
+                 font-variant-numeric: tabular-nums; }
+  .stat.critical .value { color: var(--critical); }
+  .stat.high .value { color: var(--high); }
+  .stat.medium .value { color: var(--medium); }
+  .stat.low .value { color: var(--low); }
+  .controls { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+  input[type=search] { flex: 1; min-width: 200px; background: var(--panel);
+                       border: 1px solid var(--border); border-radius: 6px;
+                       padding: 8px 12px; color: var(--fg); font-size: 13px; outline: none; }
+  input[type=search]:focus { border-color: var(--accent); }
+  .count { color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+  .item { background: var(--panel); border: 1px solid var(--border);
+          border-left-width: 3px; border-radius: 6px;
+          padding: 14px 16px; margin-bottom: 10px; }
+  .item.critical { border-left-color: var(--critical); }
+  .item.high { border-left-color: var(--high); }
+  .item.medium { border-left-color: var(--medium); }
+  .item.low { border-left-color: var(--low); }
+  .item h3 { margin: 0 0 8px; font-size: 14px; font-weight: 500; display: flex;
+             align-items: center; gap: 8px; }
+  .tag { font-size: 10px; padding: 2px 7px; border-radius: 3px;
+         text-transform: uppercase; letter-spacing: 0.06em; }
+  .item.critical .tag { background: rgba(248,81,73,0.15); color: var(--critical); }
+  .item.high .tag { background: rgba(255,158,63,0.15); color: var(--high); }
+  .item.medium .tag { background: rgba(227,179,65,0.15); color: var(--medium); }
+  .item.low .tag { background: rgba(86,211,100,0.15); color: var(--low); }
+  .id { color: var(--muted); font-family: ui-monospace, 'Consolas', monospace; font-size: 12px; }
+  .location { color: var(--accent); font-family: ui-monospace, monospace;
+              font-size: 12px; margin: 4px 0 10px; word-break: break-all; }
+  .problem { margin: 6px 0; color: var(--fg); white-space: pre-wrap; }
+  .fix { margin: 8px 0 0; padding-top: 8px; border-top: 1px solid var(--border);
+         color: var(--muted); font-size: 13px; }
+  .fix::before { content: '→ '; color: var(--accent); }
+  .extra-tags { display: inline-flex; gap: 4px; margin-left: auto; }
+  .extra-tags .t { font-size: 10px; color: var(--muted); padding: 1px 6px;
+                   border: 1px solid var(--border); border-radius: 3px; }
+  .extra-tags .t.fixed { color: var(--low); border-color: rgba(86,211,100,0.4); }
+  .extra-tags .t.verified { color: var(--accent); border-color: rgba(88,166,255,0.4); }
+  .hidden { display: none; }
+  .empty { padding: 40px; text-align: center; color: var(--muted); }
+  code { font: 12px/1.4 ui-monospace, 'Consolas', monospace;
+         background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 3px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Linux Web OS — 보안·서비스·UX 검토</h1>
+  <span class="meta">2026-04-15 · fix/security-service-ux-hardening · 16 findings</span>
+</header>
+<div class="summary" id="summary"></div>
+<div class="controls">
+  <input type="search" placeholder="검색 (Ctrl+K) — 제목·파일·내용" id="search" autofocus>
+  <span class="count" id="count"></span>
+</div>
+<div id="items"></div>
+<script>
+const DATA = [
+  {
+    "id": "C1",
+    "severity": "critical",
+    "title": "인증 없는 WebSocket 셸 + 전 네트워크 바인딩 = LAN 원격 RCE",
+    "location": "backend/routers/terminal.py:18-34 · backend/main.py:37 · install.sh:84",
+    "problem": "`/ws/terminal`이 아무 인증 없이 `bash --login` PTY를 스폰. 여기에 `--host 0.0.0.0` + CORS `allow_origins=[\"*\"]`가 결합되어, 같은 LAN의 누구든 `ws://<ip>:8000/ws/terminal`로 붙어 사용자 권한으로 임의 명령 실행 가능.",
+    "fix": "uvicorn을 `--host 127.0.0.1`로 바인딩하고 CORS를 localhost/명시 origin 화이트리스트로 제한. 원격 접속은 Tailscale 경유.",
+    "tags": ["security", "backend", "fixed"]
+  },
+  {
+    "id": "C2",
+    "severity": "critical",
+    "title": "systemd가 관리자 사용자로 실행 — C1 뚫리면 전체 장악",
+    "location": "install.sh:80",
+    "problem": "`User=$USER`로 sudo 실행자(=관리자) 권한으로 서비스가 돈다. C1 경유 RCE가 발생하면 공격자가 관리자 계정의 모든 파일·`sudoers`에 접근.",
+    "fix": "전용 `webos` 시스템 사용자 생성 (`nologin` 셸, `/var/lib/webos` 홈), systemd unit에 `User=webos` + `ProtectSystem=strict`, `ProtectHome=read-only`, `NoNewPrivileges` 등 하드닝 추가.",
+    "tags": ["security", "ops", "fixed"]
+  },
+  {
+    "id": "H1",
+    "severity": "high",
+    "title": "iframe `sandbox` 속성 없음 — 외부 URL 하이재킹 시 피해 확대",
+    "location": "frontend/src/components/apps/Kasm.jsx:26-31 · VSCode.jsx:25-30",
+    "problem": "외부 URL(`KASM_URL`, `VSCODE_TUNNEL_URL`)을 그대로 iframe에 꽂음. 설정값이 바뀌거나 터널이 탈취되면 부모 페이지 DOM·쿠키·상위 탐색을 침범 가능.",
+    "fix": "`sandbox=\"allow-scripts allow-same-origin allow-forms allow-popups\"` + `referrerPolicy=\"no-referrer\"` 추가.",
+    "tags": ["security", "frontend", "fixed"]
+  },
+  {
+    "id": "H2",
+    "severity": "high",
+    "title": "API 키 클라이언트 노출 방지 — 마스킹 검증",
+    "location": "backend/routers/config.py:42-44, 47-56",
+    "problem": "`GET /api/config` 응답에서 `ANTHROPIC_API_KEY`가 평문으로 내려가면 브라우저 개발자도구로 탈취 가능. 또한 마스킹된 값이 그대로 POST로 저장되면 실제 키가 덮어써진다.",
+    "fix": "이미 구현됨 — `sk-ant-1...AbCd` 포맷으로 마스킹, 저장 시 마스킹 placeholder 거부. 직접 확인 완료.",
+    "tags": ["security", "backend", "verified"]
+  },
+  {
+    "id": "S1",
+    "severity": "medium",
+    "title": "`/health` 엔드포인트 없음 — systemd/로드밸런서 헬스체크 불가",
+    "location": "backend/main.py",
+    "problem": "프로세스가 좀비 상태(포트 열림, 응답 없음)일 때 외부에서 감지 불가.",
+    "fix": "`@app.get(\"/health\")` 추가, SPA catch-all(`@app.get(\"/{full_path:path}\")`)보다 앞에 등록해 우선 매칭.",
+    "tags": ["ops", "backend", "fixed"]
+  },
+  {
+    "id": "S3",
+    "severity": "medium",
+    "title": "설치 시 포트 선점 체크 없음",
+    "location": "install.sh",
+    "problem": "기본 포트(8000, 6901, 8081)가 이미 사용 중이어도 모르고 설치 완료 → 서비스 시작 실패.",
+    "fix": "install.sh 선두에 `ss -tlnH \"sport = :8000\"` 체크 추가, 점유 시 경고.",
+    "tags": ["ops", "fixed"]
+  },
+  {
+    "id": "S5",
+    "severity": "medium",
+    "title": "terminal.py 10ms 폴링 루프 — 유휴 CPU 낭비",
+    "location": "backend/routers/terminal.py:39-50",
+    "problem": "`await asyncio.sleep(0.01)` + `select.select`로 PTY를 100Hz로 폴링. 터미널 앱을 열어둔 채 유휴 상태여도 서비스 프로세스 CPU 1-3% 상주.",
+    "fix": "`loop.add_reader(fd, callback)`로 이벤트 기반 전환, `asyncio.wait(..., FIRST_COMPLETED)`로 양방향 coroutine 제어.",
+    "tags": ["ops", "backend", "fixed"]
+  },
+  {
+    "id": "S6",
+    "severity": "medium",
+    "title": "PTY 종료 시 `SIGKILL` 즉시 발송 — 셸 정리 스킵",
+    "location": "backend/routers/terminal.py:72",
+    "problem": "`os.kill(pid, 9)`로 즉시 강제 종료하면 bash의 EXIT trap, 히스토리 저장, 자식 프로세스 정리가 건너뛰어짐.",
+    "fix": "SIGHUP → 100ms×10회 `waitpid(WNOHANG)` 폴 → 그래도 살아있으면 SIGKILL 순서로 graceful teardown.",
+    "tags": ["ops", "backend", "fixed"]
+  },
+  {
+    "id": "U1",
+    "severity": "medium",
+    "title": "모바일 뷰포트에서 `100vh` 주소창 이슈",
+    "location": "frontend/src/components/Desktop.jsx:75 · Taskbar.jsx",
+    "problem": "모바일 브라우저 주소창이 숨겨질 때 `100vh`가 실제 가시 영역보다 커져 스크롤바 발생.",
+    "fix": "`100vh` → `100dvh` (dynamic viewport height)로 교체. 구형 브라우저 대응 필요 시 JS `window.innerHeight` 감지 fallback.",
+    "tags": ["ux", "frontend", "fixed"]
+  },
+  {
+    "id": "U2",
+    "severity": "medium",
+    "title": "AppIcon 키보드 접근 불가",
+    "location": "frontend/src/components/AppIcon.jsx",
+    "problem": "`onDoubleClick`만 처리. Tab 키로 포커스 못 받고 스크린리더가 버튼으로 인식 안 함.",
+    "fix": "`role=\"button\"` + `tabIndex={0}` + `aria-label` + `onKeyDown` (Enter/Space) 추가.",
+    "tags": ["ux", "a11y", "frontend", "fixed"]
+  },
+  {
+    "id": "U3",
+    "severity": "medium",
+    "title": "windowStore `isMaximized`/`_prev*` 초기화 누락",
+    "location": "frontend/src/store/windowStore.js:34, 106-121",
+    "problem": "`registerApp()`에서 `isMaximized`를 명시적으로 `false` 설정 안 함. `maximize()` 호출 시 `_prev*` 필드가 undefined라 복원 좌표가 `NaN`.",
+    "fix": "초기값 `isMaximized:false`, `_prevX/Y/W/H:null` 명시. `maximize()`에서 `win` 미존재 no-op, `_prev*` 누락 시 fallback bounds로 복원.",
+    "tags": ["ux", "frontend", "fixed"]
+  },
+  {
+    "id": "U4",
+    "severity": "medium",
+    "title": "Settings ↔ Claude 에이전트 상태 미연동",
+    "location": "frontend/src/components/apps/Claude.jsx:19 · Settings.jsx",
+    "problem": "모델 선택이 Claude 앱 로컬 state에만 존재. 새로고침이나 Settings 변경과 무관하게 초기화됨.",
+    "fix": "`windowStore` 또는 별도 `settingsStore`로 전역 상태화, `useEffect`로 Settings 업데이트 시 동기화.",
+    "tags": ["ux", "frontend", "deferred"]
+  },
+  {
+    "id": "U5",
+    "severity": "medium",
+    "title": "React ErrorBoundary 없음 — 한 앱 크래시 = 전체 whitescreen",
+    "location": "frontend/src/main.jsx · Desktop.jsx",
+    "problem": "아무 앱에서 throw 되면 React tree 전체가 언마운트 → 데스크탑 화면 통째 사라짐.",
+    "fix": "`ErrorBoundary.jsx` 신규 생성, 최상위(root scope) + Window 내부(window scope)에 2단 적용. 에러 시 \"다시 시도\" 버튼 표시.",
+    "tags": ["ux", "frontend", "fixed"]
+  },
+  {
+    "id": "L1",
+    "severity": "low",
+    "title": "미사용 의존성 `lucide-react`, `clsx`",
+    "location": "frontend/package.json:18-19",
+    "problem": "import 사용처 0건인데 번들 포함됨.",
+    "fix": "dependencies에서 제거. (확인: `grep -r 'lucide-react' frontend/src` → no matches)",
+    "tags": ["quality", "frontend", "fixed"]
+  },
+  {
+    "id": "L2",
+    "severity": "low",
+    "title": "Tailscale 설치 안내 부정확",
+    "location": "install.sh (이전 버전 끝부분)",
+    "problem": "127.0.0.1 바인딩으로 변경되면 LAN 접속 시나리오가 바뀌는데 설치 스크립트 메시지는 이전 가정 그대로.",
+    "fix": "`tailscale serve --bg http://localhost:8000` 명령으로 구체화, Tailnet 내부 HTTPS 노출 경로 안내.",
+    "tags": ["docs", "ops", "fixed"]
+  },
+  {
+    "id": "L3",
+    "severity": "low",
+    "title": "README 보안 섹션이 신뢰 경계 모델을 명시하지 않음",
+    "location": "README.md",
+    "problem": "\"서버 사이드 API 키 보관\"만 적혀있고 실제 모델(인증 없음 / Tailscale 신뢰)에 대한 경고 없음.",
+    "fix": "상단에 \"⚠ `/ws/terminal`은 사용자 권한 RCE 가능 — 127.0.0.1 바인딩 + Tailscale 조합 필수\" 명시, 보안 표 확장.",
+    "tags": ["docs", "fixed"]
+  }
+];
+const sevOrder = { critical: 0, high: 1, medium: 2, low: 3 };
+const sevLabels = { critical: 'Critical', high: 'High', medium: 'Medium', low: 'Low' };
+
+function esc(s) {
+  return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function escAttr(s) { return esc(s).replace(/"/g,'&quot;'); }
+function mdCode(s) {
+  return esc(s).replace(/`([^`]+)`/g, '<code>$1</code>');
+}
+
+function renderSummary() {
+  const counts = { critical:0, high:0, medium:0, low:0 };
+  DATA.forEach(d => { if (counts[d.severity] !== undefined) counts[d.severity]++; });
+  document.getElementById('summary').innerHTML = Object.entries(counts)
+    .map(([sev,n]) =>
+      `<div class="stat ${sev}" data-filter="${sev}">
+         <div class="label">${sevLabels[sev]}</div>
+         <div class="value">${n}</div>
+       </div>`).join('') +
+    `<div class="stat" data-filter="all">
+       <div class="label">전체</div>
+       <div class="value">${DATA.length}</div>
+     </div>`;
+}
+
+function renderItems() {
+  const sorted = [...DATA].sort((a,b) => {
+    const s = sevOrder[a.severity] - sevOrder[b.severity];
+    return s !== 0 ? s : String(a.id||'').localeCompare(String(b.id||''));
+  });
+  const html = sorted.map(d => {
+    const searchText = [d.id, d.title, d.location, d.problem, d.fix, (d.tags||[]).join(' ')]
+      .filter(Boolean).join(' ').toLowerCase();
+    const tagsHtml = (d.tags || []).map(t => {
+      const cls = (t === 'fixed' || t === 'verified') ? ` ${t}` : '';
+      return `<span class="t${cls}">${esc(t)}</span>`;
+    }).join('');
+    return `<div class="item ${esc(d.severity)}" data-sev="${esc(d.severity)}"
+                 data-text="${escAttr(searchText)}">
+      <h3>
+        <span class="tag">${sevLabels[d.severity] || d.severity}</span>
+        ${d.id ? `<span class="id">${esc(d.id)}</span>` : ''}
+        <span>${esc(d.title)}</span>
+        ${tagsHtml ? `<span class="extra-tags">${tagsHtml}</span>` : ''}
+      </h3>
+      ${d.location ? `<div class="location">${esc(d.location)}</div>` : ''}
+      ${d.problem ? `<div class="problem">${mdCode(d.problem)}</div>` : ''}
+      ${d.fix ? `<div class="fix">${mdCode(d.fix)}</div>` : ''}
+    </div>`;
+  }).join('');
+  document.getElementById('items').innerHTML = html ||
+    '<div class="empty">항목이 없습니다.</div>';
+}
+
+let filter = 'all', query = '';
+function apply() {
+  let shown = 0;
+  document.querySelectorAll('.item').forEach(el => {
+    const sevOk = filter === 'all' || el.dataset.sev === filter;
+    const textOk = !query || el.dataset.text.includes(query);
+    const visible = sevOk && textOk;
+    el.classList.toggle('hidden', !visible);
+    if (visible) shown++;
+  });
+  document.getElementById('count').textContent = `표시 ${shown} / 전체 ${DATA.length}`;
+  document.querySelectorAll('.stat').forEach(s =>
+    s.classList.toggle('selected', s.dataset.filter === filter));
+}
+
+renderSummary();
+renderItems();
+apply();
+
+document.getElementById('summary').addEventListener('click', e => {
+  const s = e.target.closest('.stat');
+  if (!s) return;
+  filter = s.dataset.filter;
+  apply();
+});
+const search = document.getElementById('search');
+search.addEventListener('input', e => { query = e.target.value.toLowerCase(); apply(); });
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'k') { e.preventDefault(); search.focus(); }
+  if (e.key === 'Escape' && document.activeElement === search) {
+    search.value = ''; query = ''; apply();
+  }
+});
+</script>
+</body>
+</html>
