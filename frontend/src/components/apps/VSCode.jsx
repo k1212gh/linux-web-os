@@ -26,6 +26,8 @@ export default function VSCodeApp() {
       src={tunnelUrl}
       style={{ width: '100%', height: '100%', border: 'none' }}
       allow="clipboard-read; clipboard-write"
+      sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-downloads"
+      referrerPolicy="no-referrer"
       title="VS Code"
     />
   )

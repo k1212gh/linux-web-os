@@ -18,7 +18,13 @@ export default function AppIcon({ id, label, icon, gradient }) {
 
   return (
     <div
+      role="button"
+      tabIndex={0}
+      aria-label={`${label} 열기`}
       onDoubleClick={handleClick}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleClick() }
+      }}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => { setHover(false); setClicking(false) }}
       onMouseDown={() => setClicking(true)}

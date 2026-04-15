@@ -32,13 +32,25 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Linux Web OS", version="1.0.0", lifespan=lifespan)
 
+# Same-origin by default. Extra origins via CORS_ALLOW_ORIGINS (comma-separated).
+_default_origins = [
+    "http://localhost:8000", "http://127.0.0.1:8000",
+    "http://localhost:5173", "http://127.0.0.1:5173",
+]
+_extra = [o.strip() for o in os.environ.get("CORS_ALLOW_ORIGINS", "").split(",") if o.strip()]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=_default_origins + _extra,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization"],
 )
+
+
+@app.get("/health", include_in_schema=False)
+async def health():
+    return {"status": "ok"}
+
 
 app.include_router(terminal.router,  prefix="/ws",     tags=["terminal"])
 app.include_router(system.router,    prefix="/api/system",  tags=["system"])

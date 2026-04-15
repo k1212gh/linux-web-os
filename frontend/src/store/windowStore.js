@@ -32,11 +32,16 @@ export const useWindowStore = create((set, get) => ({
           ...app,
           isOpen: false,
           isMinimized: false,
+          isMaximized: false,
           zIndex: zCounter,
           x: pos.x,
           y: pos.y,
           w: size.w,
           h: size.h,
+          _prevX: null,
+          _prevY: null,
+          _prevW: null,
+          _prevH: null,
         }
       }
     }
@@ -105,7 +110,14 @@ export const useWindowStore = create((set, get) => ({
 
   maximize: (id) => set((state) => {
     const win = state.windows[id]
-    const isMaximized = win.isMaximized
+    if (!win) return state
+    const isMaximized = Boolean(win.isMaximized)
+    const restoreBounds = {
+      x: win._prevX ?? 80,
+      y: win._prevY ?? 48,
+      w: win._prevW ?? 600,
+      h: win._prevH ?? 400,
+    }
     return {
       windows: {
         ...state.windows,
@@ -113,7 +125,7 @@ export const useWindowStore = create((set, get) => ({
           ...win,
           isMaximized: !isMaximized,
           ...(isMaximized
-            ? { x: win._prevX, y: win._prevY, w: win._prevW, h: win._prevH }
+            ? restoreBounds
             : { _prevX: win.x, _prevY: win.y, _prevW: win.w, _prevH: win.h,
                 x: 0, y: 0,
                 w: window.innerWidth,

@@ -27,6 +27,8 @@ export default function KasmApp() {
       src={url}
       style={{ width:'100%', height:'100%', border:'none', background:'#000' }}
       allow="clipboard-read; clipboard-write; fullscreen"
+      sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+      referrerPolicy="no-referrer"
       title="Remote Desktop"
     />
   )

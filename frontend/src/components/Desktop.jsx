@@ -3,6 +3,7 @@ import { useWindowStore } from '../store/windowStore'
 import AppIcon from './AppIcon'
 import Taskbar from './Taskbar'
 import Window from './Window'
+import ErrorBoundary from './ErrorBoundary'
 import TerminalApp from './apps/Terminal'
 import VSCodeApp from './apps/VSCode'
 import ClaudeApp from './apps/Claude'
@@ -72,7 +73,7 @@ export default function Desktop() {
     <div style={{
       position: 'relative',
       width: '100vw',
-      height: '100vh',
+      height: '100dvh',
       overflow: 'hidden',
       background: 'var(--bg-desktop)',
     }}>
@@ -111,7 +112,9 @@ export default function Desktop() {
       <div style={{ position: 'absolute', inset: 0, bottom: 'var(--taskbar-h)' }}>
         {APPS.map((app) => (
           <Window key={app.id} id={app.id} title={app.title} icon={app.icon}>
-            <app.component />
+            <ErrorBoundary scope="window">
+              <app.component />
+            </ErrorBoundary>
           </Window>
         ))}
       </div>

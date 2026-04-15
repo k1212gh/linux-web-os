@@ -21,6 +21,15 @@ echo ""
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
+# ── 0. 포트 선점 체크 ──────────────────────────────────────────────────────
+if command -v ss &>/dev/null; then
+  BUSY=$(ss -tlnH "sport = :8000" 2>/dev/null | head -n1)
+  if [ -n "$BUSY" ]; then
+    warn "포트 8000이 이미 사용 중입니다: $BUSY"
+    warn "linux-web-os가 아닌 다른 프로세스라면 중단 후 다시 실행하세요."
+  fi
+fi
+
 # ── 1. System deps ──────────────────────────────────────────────────────────
 info "시스템 패키지 업데이트..."
 sudo apt-get update -qq
@@ -66,37 +75,69 @@ ENVEOF
   ok ".env.json 생성됨 — 설정 앱에서 API 키를 입력하세요"
 fi
 
-# ── 5. systemd service ──────────────────────────────────────────────────────
+# ── 5. Dedicated service user ───────────────────────────────────────────────
+SERVICE_USER="webos"
+if ! id -u "$SERVICE_USER" &>/dev/null; then
+  info "전용 서비스 사용자 생성: $SERVICE_USER"
+  sudo useradd --system --create-home --home-dir /var/lib/webos \
+               --shell /usr/sbin/nologin "$SERVICE_USER"
+  ok "사용자 생성됨"
+fi
+# 레포 읽기 권한(그룹 공유) + backend/.env.json 은 서비스 사용자 전용
+sudo chgrp -R "$SERVICE_USER" "$SCRIPT_DIR"
+sudo chmod -R g+rX "$SCRIPT_DIR"
+if [ -f "$SCRIPT_DIR/backend/.env.json" ]; then
+  sudo chown "$SERVICE_USER":"$SERVICE_USER" "$SCRIPT_DIR/backend/.env.json"
+  sudo chmod 600 "$SCRIPT_DIR/backend/.env.json"
+fi
+
+# ── 6. systemd service ──────────────────────────────────────────────────────
 SERVICE_FILE="/etc/systemd/system/linux-web-os.service"
-if [ ! -f "$SERVICE_FILE" ]; then
-  info "systemd 서비스 등록..."
-  sudo tee "$SERVICE_FILE" > /dev/null << SVCEOF
+info "systemd 서비스 설치/갱신..."
+sudo tee "$SERVICE_FILE" > /dev/null << SVCEOF
 [Unit]
 Description=Linux Web OS
 After=network.target
 
 [Service]
 Type=simple
-User=$USER
+User=$SERVICE_USER
+Group=$SERVICE_USER
 WorkingDirectory=$SCRIPT_DIR/backend
 Environment=PATH=$SCRIPT_DIR/.venv/bin:/usr/local/bin:/usr/bin:/bin
 Environment=HSA_OVERRIDE_GFX_VERSION=10.3.0
-ExecStart=$SCRIPT_DIR/.venv/bin/uvicorn main:app --host 0.0.0.0 --port 8000
+ExecStart=$SCRIPT_DIR/.venv/bin/uvicorn main:app --host 127.0.0.1 --port 8000
 Restart=on-failure
 RestartSec=5
+
+# Hardening
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=read-only
+PrivateTmp=true
+ReadWritePaths=$SCRIPT_DIR/backend
+RestrictSUIDSGID=true
+LockPersonality=true
+RestrictRealtime=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
 
 [Install]
 WantedBy=multi-user.target
 SVCEOF
-  sudo systemctl daemon-reload
-  sudo systemctl enable linux-web-os
-  ok "systemd 서비스 등록됨"
-fi
+sudo systemctl daemon-reload
+sudo systemctl enable linux-web-os
+ok "systemd 서비스 등록됨 (User=$SERVICE_USER, 127.0.0.1 바인딩)"
 
-# ── 6. Tailscale (optional) ─────────────────────────────────────────────────
+# ── 7. Tailscale (optional) ─────────────────────────────────────────────────
+info "네트워크 노출 정책: 서비스는 127.0.0.1:8000에만 바인딩됩니다."
+info "LAN/원격 접속이 필요하면 Tailscale을 통해 노출하세요."
 if ! command -v tailscale &>/dev/null; then
-  warn "Tailscale이 설치되지 않았습니다."
-  warn "원격 접속을 위해 설치하려면: curl -fsSL https://tailscale.com/install.sh | sh"
+  warn "Tailscale 미설치. 설치: curl -fsSL https://tailscale.com/install.sh | sh"
+  warn "설치 후: sudo tailscale up && sudo tailscale serve --bg http://localhost:8000"
+else
+  ok "Tailscale 설치됨. 노출 예시: sudo tailscale serve --bg http://localhost:8000"
 fi
 
 # ── Done ────────────────────────────────────────────────────────────────────

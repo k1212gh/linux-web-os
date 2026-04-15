@@ -60,8 +60,10 @@ chmod +x install.sh
 ### 시작
 
 ```bash
-# 서비스로 실행 (재부팅 후 자동 시작)
+# 서비스로 실행 (재부팅 후 자동 시작, 127.0.0.1:8000 바인딩)
 sudo systemctl start linux-web-os
+sudo systemctl status linux-web-os
+curl http://localhost:8000/health   # {"status":"ok"}
 
 # 개발 모드
 ./dev.sh
@@ -200,12 +202,35 @@ Settings 앱 또는 `backend/.env.json` 직접 편집:
 
 ## 보안
 
+> ⚠ **신뢰 경계 모델**: 본 시스템은 인증 계층이 없습니다.
+> `/ws/terminal` 은 사용자 권한의 실제 bash 세션을 제공하므로
+> **엔드포인트에 접근할 수 있는 누구든 원격 코드 실행이 가능**합니다.
+> 따라서 반드시 `127.0.0.1` 바인딩 + Tailscale(WireGuard) 신뢰 네트워크 조합으로만 운영하세요.
+
 | 계층 | 기술 | 효과 |
 |---|---|---|
-| 네트워크 | Tailscale (WireGuard) | 외부 포트 비노출, E2E 암호화 |
-| 전송 | Tailscale Serve HTTPS | 자동 TLS 인증서 |
-| 인증 | GitHub OAuth (Tailscale) | 본인 기기만 접속 |
-| API 키 | 서버 사이드 보관 | 브라우저에 API 키 노출 없음 |
+| 바인딩 | `--host 127.0.0.1` | LAN/공용망 비노출 (기본값) |
+| 전용 사용자 | `User=webos` systemd unit | 관리자 계정 탈취 방지, 홈디렉토리 read-only |
+| 시크릿 권한 | `chmod 600 backend/.env.json` | 서비스 사용자만 읽기 가능 |
+| 네트워크 | Tailscale (WireGuard) | E2E 암호화, 외부 포트 비노출 |
+| 전송 | `tailscale serve` HTTPS | 자동 TLS, Tailnet 내부에만 노출 |
+| 인증 | Tailscale ACL | 본인 기기만 접속 |
+| API 키 | 서버 사이드 보관 + GET 응답 마스킹 | 브라우저/클라이언트에 평문 노출 없음 |
+| iframe | `sandbox` + `no-referrer` | 외부 URL 하이재킹 시 피해 범위 제한 |
+| CORS | 동일 origin 화이트리스트 | XHR/CSRF 공격면 축소 |
+
+### 권장 운영
+
+```bash
+# 1. 서비스 시작 (127.0.0.1:8000)
+sudo systemctl start linux-web-os
+
+# 2. Tailscale로만 원격 노출
+sudo tailscale serve --bg http://localhost:8000
+# → https://workstation.tail-xxxxx.ts.net 에서만 접근 가능
+
+# 3. 절대 금지: --host 0.0.0.0, 공유기 포트포워딩, 공개 도메인 직접 프록시
+```
 
 ---
 
