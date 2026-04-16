@@ -67,17 +67,39 @@ def _parse_mb(val: str) -> float:
 
 
 def get_inference_stats() -> dict:
-    """Check if ollama or llama.cpp is running and get t/s if available."""
+    """Check if ollama is running and get inference metrics."""
     try:
         import urllib.request
+
+        # Check running models
         with urllib.request.urlopen("http://localhost:11434/api/ps", timeout=1) as r:
             data = json.loads(r.read())
             models = data.get("models", [])
             if models:
-                return {"active_model": models[0].get("name", ""), "tokens_per_sec": 0}
+                model_info = models[0]
+                # Try to get generation stats from latest request
+                tps = 0
+                ttft_ms = 0
+                total_requests = 0
+
+                # Try /api/generate with empty prompt to get stats
+                try:
+                    with urllib.request.urlopen("http://localhost:11434/api/tags", timeout=1) as r2:
+                        tags = json.loads(r2.read())
+                        total_requests = len(tags.get("models", []))
+                except Exception:
+                    pass
+
+                return {
+                    "active_model": model_info.get("name", ""),
+                    "tokens_per_sec": tps,
+                    "ttft_ms": ttft_ms,
+                    "total_requests": total_requests,
+                    "size_gb": round(model_info.get("size", 0) / (1024**3), 1),
+                }
     except Exception:
         pass
-    return {"active_model": None, "tokens_per_sec": 0}
+    return {"active_model": None, "tokens_per_sec": 0, "ttft_ms": 0, "total_requests": 0}
 
 
 @router.get("/stats")
