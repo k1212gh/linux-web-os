@@ -5,14 +5,14 @@ import { useWindowStore } from '../store/windowStore'
 const TITLEBAR_H = 36
 
 export default function Window({ id, title, icon, children }) {
-  const { windows, close, minimize, maximize, focus, move, resize } = useWindowStore()
+  const { windows, close, minimize, maximize, focus, move, resize, restoreAt } = useWindowStore()
   const win = windows[id]
   const isActive = useWindowStore((s) => s.activeId === id)
   const [btnHover, setBtnHover] = useState(null)
   const [titleMenu, setTitleMenu] = useState(null)
   const dragStartRef = useRef(null)
 
-  // ALL hooks must be above this early return
+  // ALL hooks must be above early return
   const onTitleDoubleClick = useCallback((e) => {
     if (e.target.closest('button')) return
     maximize(id)
@@ -26,18 +26,14 @@ export default function Window({ id, title, icon, children }) {
 
   const onDragStart = useCallback((e, d) => {
     if (win?.isMaximized) {
-      const newW = win._prevW || 700
-      const newH = win._prevH || 500
-      const newX = Math.max(0, d.x - newW / 2)
-      const newY = d.y
-      maximize(id)
-      setTimeout(() => {
-        move(id, newX, newY)
-        resize(id, newW, newH, newX, newY)
-      }, 0)
+      // Restore window at cursor position so drag continues naturally
+      const prevW = win._prevW || 700
+      const cursorX = d.lastX ?? d.x
+      const newX = Math.max(0, cursorX - prevW / 2)
+      restoreAt(id, newX, d.y)
     }
     dragStartRef.current = { x: d.x, y: d.y }
-  }, [win?.isMaximized, win?._prevW, win?._prevH, id, maximize, move, resize])
+  }, [win?.isMaximized, win?._prevW, id, restoreAt])
 
   const onDragStop = useCallback((e, d) => {
     if (d.y <= 2 && !win?.isMaximized) {

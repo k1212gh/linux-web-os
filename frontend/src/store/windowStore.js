@@ -135,4 +135,23 @@ export const useWindowStore = create((set, get) => ({
       }
     }
   }),
+
+  // Restore from maximized with a specific position (for drag-to-restore)
+  restoreAt: (id, x, y) => set((state) => {
+    const win = state.windows[id]
+    if (!win?.isMaximized) return state
+    return {
+      windows: {
+        ...state.windows,
+        [id]: {
+          ...win,
+          isMaximized: false,
+          x,
+          y,
+          w: win._prevW || 700,
+          h: win._prevH || 500,
+        }
+      }
+    }
+  }),
 }))
