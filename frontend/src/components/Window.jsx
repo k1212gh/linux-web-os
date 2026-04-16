@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { Rnd } from 'react-rnd'
 import { useWindowStore } from '../store/windowStore'
+import { useOsStyleStore } from '../store/osStyleStore'
 
 const TITLEBAR_H = 36
 const SNAP_THRESHOLD = 12
@@ -12,6 +13,7 @@ export default function Window({ id, title, icon, children }) {
   const [btnHover, setBtnHover] = useState(null)
   const [titleMenu, setTitleMenu] = useState(null)
   const dragStartRef = useRef(null)
+  const osStyle = useOsStyleStore((s) => s.osStyle)
 
   // Close animation: wait for animation to finish, then remove
   useEffect(() => {
@@ -149,19 +151,70 @@ export default function Window({ id, title, icon, children }) {
               display: 'flex', alignItems: 'center', padding: '0 12px', gap: 10, userSelect: 'none',
             }}
           >
-            <div style={{ display: 'flex', gap: 7, alignItems: 'center' }}>
-              {['close', 'min', 'max'].map(type => (
-                <button key={type} style={btnStyle(type)}
-                  onMouseEnter={() => setBtnHover(type)} onMouseLeave={() => setBtnHover(null)}
-                  onClick={e => { e.stopPropagation(); if (type === 'close') close(id); if (type === 'min') minimize(id); if (type === 'max') maximize(id) }}
-                >{btnIcon(type)}</button>
-              ))}
-            </div>
-            <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
-              <span style={{ fontSize: 13 }}>{icon}</span>
-              <span style={{ fontSize: 12.5, color: isActive ? 'var(--text-primary)' : 'var(--text-muted)', fontWeight: 500 }}>{title}</span>
-            </div>
-            <div style={{ width: 52 }} />
+            {/* macOS: buttons left, title center */}
+            {osStyle === 'macos' && <>
+              <div style={{ display: 'flex', gap: 7, alignItems: 'center' }}>
+                {['close', 'min', 'max'].map(type => (
+                  <button key={type} style={btnStyle(type)}
+                    onMouseEnter={() => setBtnHover(type)} onMouseLeave={() => setBtnHover(null)}
+                    onClick={e => { e.stopPropagation(); if (type === 'close') close(id); if (type === 'min') minimize(id); if (type === 'max') maximize(id) }}
+                  >{btnIcon(type)}</button>
+                ))}
+              </div>
+              <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                <span style={{ fontSize: 13 }}>{icon}</span>
+                <span style={{ fontSize: 12.5, color: isActive ? 'var(--text-primary)' : 'var(--text-muted)', fontWeight: 500 }}>{title}</span>
+              </div>
+              <div style={{ width: 52 }} />
+            </>}
+
+            {/* Windows 11: icon+title left, buttons right */}
+            {osStyle === 'windows' && <>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1 }}>
+                <span style={{ fontSize: 14 }}>{icon}</span>
+                <span style={{ fontSize: 12.5, color: isActive ? 'var(--text-primary)' : 'var(--text-muted)', fontWeight: 400 }}>{title}</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', height: '100%' }}>
+                {[
+                  { type: 'min', label: '─', w: 44 },
+                  { type: 'max', label: win.isMaximized ? '❐' : '□', w: 44 },
+                  { type: 'close', label: '✕', w: 44, hoverBg: '#c42b1c' },
+                ].map(b => (
+                  <button key={b.type}
+                    onMouseEnter={() => setBtnHover(b.type)} onMouseLeave={() => setBtnHover(null)}
+                    onClick={e => { e.stopPropagation(); if (b.type === 'close') close(id); if (b.type === 'min') minimize(id); if (b.type === 'max') maximize(id) }}
+                    style={{
+                      width: b.w, height: '100%', border: 'none', cursor: 'pointer',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: b.type === 'close' ? 11 : 13, fontWeight: 300,
+                      color: btnHover === b.type && b.hoverBg ? '#fff' : 'var(--text-secondary)',
+                      background: btnHover === b.type ? (b.hoverBg || 'var(--bg-hover)') : 'transparent',
+                      transition: 'background 0.1s, color 0.1s',
+                      borderRadius: b.type === 'close' && !(win.isMaximized || win.snapped) ? '0 11px 0 0' : 0,
+                    }}
+                  >{b.label}</button>
+                ))}
+              </div>
+            </>}
+
+            {/* GNOME: title center, close button right only */}
+            {osStyle === 'gnome' && <>
+              <div style={{ width: 40 }} />
+              <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                <span style={{ fontSize: 12.5, color: isActive ? 'var(--text-primary)' : 'var(--text-muted)', fontWeight: 500 }}>{title}</span>
+              </div>
+              <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                <button onClick={e => { e.stopPropagation(); minimize(id) }}
+                  onMouseEnter={() => setBtnHover('min')} onMouseLeave={() => setBtnHover(null)}
+                  style={{ width: 24, height: 24, borderRadius: 12, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, background: btnHover === 'min' ? 'var(--bg-hover)' : 'transparent', color: 'var(--text-muted)', transition: 'background 0.1s' }}>─</button>
+                <button onClick={e => { e.stopPropagation(); maximize(id) }}
+                  onMouseEnter={() => setBtnHover('max')} onMouseLeave={() => setBtnHover(null)}
+                  style={{ width: 24, height: 24, borderRadius: 12, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, background: btnHover === 'max' ? 'var(--bg-hover)' : 'transparent', color: 'var(--text-muted)', transition: 'background 0.1s' }}>{win.isMaximized ? '❐' : '□'}</button>
+                <button onClick={e => { e.stopPropagation(); close(id) }}
+                  onMouseEnter={() => setBtnHover('close')} onMouseLeave={() => setBtnHover(null)}
+                  style={{ width: 24, height: 24, borderRadius: 12, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, background: btnHover === 'close' ? '#c42b1c' : 'transparent', color: btnHover === 'close' ? '#fff' : 'var(--text-muted)', transition: 'all 0.1s' }}>✕</button>
+              </div>
+            </>}
           </div>
 
           <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>{children}</div>

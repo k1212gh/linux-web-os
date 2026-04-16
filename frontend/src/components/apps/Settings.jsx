@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useOsStyleStore } from '../../store/osStyleStore'
 
 const WALLPAPERS = [
   { name: 'Deep Space', value: 'linear-gradient(135deg, #0a0e1a 0%, #1a1040 50%, #0a0e1a 100%)' },
@@ -157,6 +158,30 @@ export default function SettingsApp() {
             >
               <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 2 }}>{t.label}</div>
               <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{t.desc}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* OS Style */}
+      <div style={s.section}>
+        <div style={s.sectionTitle}>OS 스타일</div>
+        <div style={{ display: 'flex', gap: 8 }}>
+          {[
+            { id: 'windows', label: '🪟 Windows 11', desc: '우측 버튼, 중앙 Taskbar' },
+            { id: 'macos', label: '🍎 macOS', desc: '좌측 트래픽 라이트, Dock' },
+            { id: 'gnome', label: '🐧 GNOME', desc: '미니멀, 상단 패널' },
+          ].map(os => (
+            <div key={os.id} onClick={() => useOsStyleStore.getState().setOsStyle(os.id)}
+              style={{
+                flex: 1, padding: '14px 14px', borderRadius: 10, cursor: 'pointer',
+                background: useOsStyleStore.getState().osStyle === os.id ? 'rgba(59,130,246,0.12)' : 'var(--bg-card)',
+                border: useOsStyleStore.getState().osStyle === os.id ? '1px solid rgba(59,130,246,0.3)' : '1px solid var(--border)',
+                transition: 'all 0.15s',
+              }}
+            >
+              <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 2 }}>{os.label}</div>
+              <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>{os.desc}</div>
             </div>
           ))}
         </div>
