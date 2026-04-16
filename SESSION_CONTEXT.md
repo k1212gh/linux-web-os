@@ -1,4 +1,4 @@
-# 세션 컨텍스트 — 2026-04-17 (업데이트)
+# 세션 컨텍스트 — 2026-04-17 (최종 업데이트)
 
 > 다른 기기에서 이어서 작업할 때 이 파일을 먼저 읽으세요.
 
@@ -139,6 +139,54 @@ frontend/src/store/windowStore.js    ← 새 앱 기본 윈도우 크기 추가
 | 포트폴리오 데이터 | `frontend/src/data/profile.js`, `projects.js` |
 | 포트폴리오 앱 | `frontend/src/components/apps/{Profile,Resume,Projects,Blog,Timeline,Contact}.jsx` |
 | 기존 앱 | `frontend/src/components/apps/{Terminal,VSCode,Claude,SystemMonitor,Kasm,Settings}.jsx` |
+
+## 완료된 Sprint
+
+| Sprint | 내용 | 커밋 |
+|--------|------|------|
+| 0 | 포트폴리오 앱 6개 + QA 테스트 + 버그 수정 | 3 커밋 |
+| 1 | Claude Code 앱 + 개발도구(Git/CI·CD/파일) + 유틸(메모/계산기) | 1 커밋 |
+| 1b | OS 기능 (부팅/우클릭/단축키/전체화면) + LLM 연동(Ollama) | 1 커밋 |
+| 1c | 윈도우 UX (드래그 복원, 타이틀바 메뉴, 스냅) | 3 커밋 |
+| Sprint 1 | 디자인/UX 오버홀 (닫기 애니메이션, Dock magnification, 스냅 프리뷰, 다크/라이트 테마, 배경 애니메이션) | 1 커밋 |
+| Sprint 2 | 콘텐츠 채우기 (프로필 10스킬, 프로젝트 7개, 블로그 5개, 타임라인 9개) | 1 커밋 |
+| Sprint 6 | README 완성 | 1 커밋 |
+
+## 다음 세션에서 할 일 (우선순위 순)
+
+### 1. 하네스(Harness) 엔지니어링 시스템 구현 ⭐ (핵심)
+
+**개념**: AI 에이전트가 안전하고 일관되게 코딩하도록 시스템 환경을 설계하는 프레임워크.
+
+**4대 요소**:
+1. `docs/` — PRD, 아키텍처, ADR 등 컨텍스트 문서
+2. `CLAUDE.md` — 프로젝트 규칙/헌법
+3. 실행 엔진 — `/harness` 명령으로 Phase별 자동 실행 + 상태 관리
+4. Hooks — TDD 강제, 위험 명령 차단, 서킷 브레이커
+
+**참고 자료**:
+- 노션: https://raspy-roll-970.notion.site/340f7725c9d98176b68bd31c823c7540
+- 핵심: 분류기 → 컨텍스트 관리자 → 실행 루프 → 워커 격리 4단계 파이프라인
+
+**AgentOS에 통합 방법**:
+- 새 앱: "Harness Manager" — 프로젝트별 하네스 설정 UI
+- 백엔드: harness 실행 엔진 (Phase별 자동 실행)
+- Claude Code 앱과 연동: 하네스 규칙 하에서 에이전트 실행
+- CI/CD 앱과 연동: 하네스 검증 게이트
+
+### 2. WSL 환경 세팅
+```bash
+# WSL에서 수동 실행 필요:
+sudo apt-get update && sudo apt-get install -y nodejs npm
+cd /mnt/c/Users/SSAFY/Desktop/ToyPJT/linux-web-os-analysis
+cd backend && python3 -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt
+uvicorn main:app --reload --port 8000
+```
+
+### 3. 실제 백엔드 연동 테스트
+- 터미널 PTY, Claude Code, Git 대시보드, 파일 매니저
+
+### 4. main 머지 + GitHub Pages 배포
 
 ## 참고: 바닐라 JS 버전
 
