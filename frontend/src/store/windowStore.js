@@ -71,19 +71,13 @@ export const useWindowStore = create((set, get) => ({
     if (state.windows[app.id]) return state
     const size = DEFAULT_SIZES[app.id] || { w: 600, h: 400 }
     const pos = DEFAULT_POS(app.id, Object.keys(state.windows).length)
-    // Restore saved position (but always clamp to viewport)
-    const saved = loadLayout()[app.id]
+    // Always use default positions (no saved restore — prevents coordinate drift)
     const vw = window.innerWidth
     const vh = window.innerHeight - TASKBAR_H
-    let sw = Math.min(saved?.w ?? size.w, vw - 20)
-    let sh = Math.min(saved?.h ?? size.h, vh - 20)
-    let sx = saved?.x ?? pos.x
-    let sy = saved?.y ?? pos.y
-    // Ensure at least 40px of titlebar is visible
-    if (sx < 0) sx = 20
-    if (sy < 0) sy = 20
-    if (sx + 40 > vw) sx = Math.max(20, vw - sw - 20)
-    if (sy + 40 > vh) sy = Math.max(20, vh - sh - 20)
+    let sw = Math.min(size.w, vw - 40)
+    let sh = Math.min(size.h, vh - 40)
+    let sx = pos.x
+    let sy = pos.y
     return {
       windows: {
         ...state.windows,
@@ -98,21 +92,12 @@ export const useWindowStore = create((set, get) => ({
   open: (id) => set((state) => {
     const z = ++zCounter
     const win = state.windows[id]
-    // Clamp position on open to prevent off-screen
-    let { x, y, w, h } = win || {}
-    const vw = window.innerWidth
-    const vh = window.innerHeight - TASKBAR_H
-    if (x < 0) x = 20
-    if (y < 0) y = 20
-    if (w > vw - 20) w = vw - 40
-    if (h > vh - 20) h = vh - 40
-    if (x + 40 > vw) x = Math.max(20, vw - w - 20)
-    if (y + 40 > vh) y = Math.max(20, vh - h - 20)
+    if (!win) return state
     return {
       activeId: id,
       windows: {
         ...state.windows,
-        [id]: { ...state.windows[id], isOpen: true, isMinimized: false, isClosing: false, zIndex: z, x, y, w, h }
+        [id]: { ...win, isOpen: true, isMinimized: false, isClosing: false, zIndex: z }
       }
     }
   }),
@@ -225,7 +210,5 @@ export const useWindowStore = create((set, get) => ({
   setSnapPreview: (zone) => set({ snapPreview: zone }),
 }))
 
-// Auto-save window layout on every state change (debounced)
-useWindowStore.subscribe((state) => {
-  debounceSaveLayout(state.windows)
-})
+// Window layout save disabled — react-rnd coordinate mismatch causes drift.
+// Icons position saving still works via AppIcon.jsx localStorage.

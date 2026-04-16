@@ -249,9 +249,27 @@ export default function SettingsApp() {
       {/* Desktop */}
       <div style={s.section}>
         <div style={s.sectionTitle}>데스크톱</div>
-        <button style={s.resetBtn} onClick={resetIconPositions}>
-          🔄 아이콘 위치 초기화
-        </button>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <button style={s.resetBtn} onClick={resetIconPositions}>
+            🔄 아이콘 위치 초기화
+          </button>
+          <button style={s.resetBtn} onClick={() => { localStorage.removeItem('agentos-window-layout'); window.location.reload() }}>
+            🗑 창 위치 초기화
+          </button>
+          <button style={{ ...s.resetBtn, color: '#ef4444' }} onClick={() => {
+            localStorage.removeItem('agentos-icon-positions')
+            localStorage.removeItem('agentos-window-layout')
+            localStorage.removeItem('agentos-boot')
+            localStorage.removeItem('agentos-settings')
+            localStorage.removeItem('agentos-os-style')
+            localStorage.removeItem('agentos-theme')
+            localStorage.removeItem('agentos-memos')
+            localStorage.removeItem('agentos-blog-draft')
+            window.location.reload()
+          }}>
+            ⚠️ 전체 초기화
+          </button>
+        </div>
       </div>
 
       {/* Save bar */}
