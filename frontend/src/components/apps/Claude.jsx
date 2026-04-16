@@ -60,10 +60,10 @@ export default function ClaudeApp() {
         content: data.content || data.error || '오류가 발생했습니다.',
         id: Date.now() + 1,
       }])
-    } catch {
+    } catch (err) {
       setMessages((m) => [...m, {
         role: 'assistant',
-        content: '⚠️ API 연결 오류. 백엔드 설정을 확인하세요.',
+        content: '⚠️ API 연결 오류. 백엔드가 실행 중인지 확인하세요.\n' + (err?.message || ''),
         id: Date.now() + 1,
       }])
     } finally {

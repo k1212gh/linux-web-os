@@ -32,22 +32,53 @@ const DEFAULT_POS = (id, index = 0) => ({
 })
 
 const TASKBAR_H = 56
+const LAYOUT_KEY = 'agentos-window-layout'
+
+// Save/restore window positions
+function saveLayout(windows) {
+  try {
+    const layout = {}
+    Object.entries(windows).forEach(([id, w]) => {
+      if (w.isOpen) {
+        layout[id] = { x: w.x, y: w.y, w: w.w, h: w.h, isMaximized: w.isMaximized, snapped: w.snapped }
+      }
+    })
+    localStorage.setItem(LAYOUT_KEY, JSON.stringify(layout))
+  } catch {}
+}
+
+function loadLayout() {
+  try { return JSON.parse(localStorage.getItem(LAYOUT_KEY)) || {} } catch { return {} }
+}
+
+// Debounce layout save
+let saveTimer = null
+function debounceSaveLayout(windows) {
+  clearTimeout(saveTimer)
+  saveTimer = setTimeout(() => saveLayout(windows), 500)
+}
 
 export const useWindowStore = create((set, get) => ({
   windows: {},
   activeId: null,
-  snapPreview: null, // 'left' | 'right' | 'top' | null
+  snapPreview: null,
 
   registerApp: (app) => set((state) => {
     if (state.windows[app.id]) return state
     const size = DEFAULT_SIZES[app.id] || { w: 600, h: 400 }
     const pos = DEFAULT_POS(app.id, Object.keys(state.windows).length)
+    // Restore saved position if exists
+    const saved = loadLayout()[app.id]
     return {
       windows: {
         ...state.windows,
         [app.id]: {
           ...app, isOpen: false, isMinimized: false, isClosing: false,
-          zIndex: zCounter, x: pos.x, y: pos.y, w: size.w, h: size.h,
+          zIndex: zCounter,
+          x: saved?.x ?? pos.x,
+          y: saved?.y ?? pos.y,
+          w: saved?.w ?? size.w,
+          h: saved?.h ?? size.h,
         }
       }
     }
@@ -171,3 +202,8 @@ export const useWindowStore = create((set, get) => ({
 
   setSnapPreview: (zone) => set({ snapPreview: zone }),
 }))
+
+// Auto-save window layout on every state change (debounced)
+useWindowStore.subscribe((state) => {
+  debounceSaveLayout(state.windows)
+})

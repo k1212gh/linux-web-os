@@ -63,11 +63,12 @@ export default function CalculatorApp() {
   }
 
   const calc = (a, b, op) => {
+    if (isNaN(a) || isNaN(b)) return 0
     switch (op) {
       case '+': return a + b
       case '-': return a - b
       case '×': return a * b
-      case '÷': return b !== 0 ? a / b : 'Error'
+      case '÷': return b !== 0 ? a / b : 0
       default: return b
     }
   }

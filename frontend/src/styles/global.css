@@ -56,6 +56,9 @@
 
   --accent: #2563eb;
   --accent-glow: rgba(37, 99, 235, 0.2);
+  --accent-green: #16a34a;
+  --accent-amber: #d97706;
+  --accent-red: #dc2626;
 
   --border: rgba(0, 0, 0, 0.08);
   --border-focus: rgba(37, 99, 235, 0.4);
@@ -141,5 +144,48 @@ h4 { font-size: 13px; font-weight: 600; line-height: 1.4; color: var(--text-prim
 
 @keyframes snapPreviewPulse {
   0%, 100% { opacity: 0.15; }
-  50%      { opacity: 0.25; }
+  50%      { opacity: 0.22; }
+}
+
+/* ─── Mobile / Tablet ─── */
+@media (max-width: 768px) {
+  :root { --taskbar-h: 52px; }
+
+  /* Force windows to fullscreen on mobile */
+  .mobile-fullscreen {
+    top: 0 !important; left: 0 !important;
+    width: 100vw !important; height: calc(100vh - 52px) !important;
+    border-radius: 0 !important;
+  }
+
+  /* Hide desktop icons on mobile — use start menu instead */
+  .desktop-icon-layer { display: none !important; }
+
+  /* Simplified dock */
+  .dock-container {
+    border-radius: 0 !important;
+    width: 100% !important;
+    justify-content: space-evenly !important;
+  }
+}
+
+@media (max-width: 480px) {
+  :root {
+    --taskbar-h: 48px;
+    --radius-window: 0px;
+  }
+}
+
+/* ─── Touch ─── */
+@media (pointer: coarse) {
+  /* Larger touch targets */
+  .titlebar-drag { min-height: 42px !important; }
+}
+
+/* ─── Reduced motion ─── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01s !important;
+    transition-duration: 0.01s !important;
+  }
 }
