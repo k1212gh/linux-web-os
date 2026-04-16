@@ -129,8 +129,39 @@ export default function SettingsApp() {
     window.location.reload()
   }
 
+  const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark'
+
+  const setTheme = (t) => {
+    document.documentElement.setAttribute('data-theme', t)
+    localStorage.setItem('agentos-theme', t)
+    updateSetting('theme', t)
+  }
+
   return (
     <div style={s.wrap}>
+      {/* Theme */}
+      <div style={s.section}>
+        <div style={s.sectionTitle}>테마</div>
+        <div style={{ display: 'flex', gap: 8 }}>
+          {[
+            { id: 'dark', label: '🌙 다크', desc: '기본 어두운 테마' },
+            { id: 'light', label: '☀️ 라이트', desc: '밝은 테마' },
+          ].map(t => (
+            <div key={t.id} onClick={() => setTheme(t.id)}
+              style={{
+                flex: 1, padding: '14px 16px', borderRadius: 10, cursor: 'pointer',
+                background: currentTheme === t.id ? 'rgba(59,130,246,0.12)' : 'var(--bg-card)',
+                border: currentTheme === t.id ? '1px solid rgba(59,130,246,0.3)' : '1px solid var(--border)',
+                transition: 'all 0.15s',
+              }}
+            >
+              <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 2 }}>{t.label}</div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{t.desc}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* Wallpaper */}
       <div style={s.section}>
         <div style={s.sectionTitle}>배경 화면</div>

@@ -9,7 +9,7 @@ const DEFAULT_SIZES = {
   monitor:   { w: 560, h: 420 },
   files:     { w: 600, h: 440 },
   kasm:      { w: 900, h: 600 },
-  settings:  { w: 480, h: 380 },
+  settings:  { w: 480, h: 440 },
   'claude-code': { w: 860, h: 600 },
   'llm-dashboard': { w: 900, h: 600 },
   git:           { w: 680, h: 480 },
@@ -30,9 +30,12 @@ const DEFAULT_POS = (id, index = 0) => ({
   y: 48 + index * 28,
 })
 
+const TASKBAR_H = 56
+
 export const useWindowStore = create((set, get) => ({
-  windows: {},   // id -> { id, title, icon, isOpen, isMinimized, zIndex, x, y, w, h }
+  windows: {},
   activeId: null,
+  snapPreview: null, // 'left' | 'right' | 'top' | null
 
   registerApp: (app) => set((state) => {
     if (state.windows[app.id]) return state
@@ -42,14 +45,8 @@ export const useWindowStore = create((set, get) => ({
       windows: {
         ...state.windows,
         [app.id]: {
-          ...app,
-          isOpen: false,
-          isMinimized: false,
-          zIndex: zCounter,
-          x: pos.x,
-          y: pos.y,
-          w: size.w,
-          h: size.h,
+          ...app, isOpen: false, isMinimized: false, isClosing: false,
+          zIndex: zCounter, x: pos.x, y: pos.y, w: size.w, h: size.h,
         }
       }
     }
@@ -61,21 +58,25 @@ export const useWindowStore = create((set, get) => ({
       activeId: id,
       windows: {
         ...state.windows,
-        [id]: {
-          ...state.windows[id],
-          isOpen: true,
-          isMinimized: false,
-          zIndex: z,
-        }
+        [id]: { ...state.windows[id], isOpen: true, isMinimized: false, isClosing: false, zIndex: z }
       }
     }
   }),
 
+  // Start close animation (isClosing=true). Window.jsx calls _remove after animation.
   close: (id) => set((state) => ({
+    windows: {
+      ...state.windows,
+      [id]: { ...state.windows[id], isClosing: true }
+    }
+  })),
+
+  // Actually remove window (called after close animation finishes)
+  _remove: (id) => set((state) => ({
     activeId: state.activeId === id ? null : state.activeId,
     windows: {
       ...state.windows,
-      [id]: { ...state.windows[id], isOpen: false }
+      [id]: { ...state.windows[id], isOpen: false, isClosing: false }
     }
   })),
 
@@ -93,65 +94,79 @@ export const useWindowStore = create((set, get) => ({
       activeId: id,
       windows: {
         ...state.windows,
-        [id]: {
-          ...state.windows[id],
-          zIndex: z,
-          isMinimized: false,
-        }
+        [id]: { ...state.windows[id], zIndex: z, isMinimized: false }
       }
     }
   }),
 
   move: (id, x, y) => set((state) => ({
-    windows: {
-      ...state.windows,
-      [id]: { ...state.windows[id], x, y }
-    }
+    windows: { ...state.windows, [id]: { ...state.windows[id], x, y } }
   })),
 
   resize: (id, w, h, x, y) => set((state) => ({
-    windows: {
-      ...state.windows,
-      [id]: { ...state.windows[id], w, h, x, y }
-    }
+    windows: { ...state.windows, [id]: { ...state.windows[id], w, h, x, y } }
   })),
 
   maximize: (id) => set((state) => {
     const win = state.windows[id]
-    const isMaximized = win.isMaximized
+    const was = win.isMaximized
     return {
       windows: {
         ...state.windows,
         [id]: {
-          ...win,
-          isMaximized: !isMaximized,
-          ...(isMaximized
+          ...win, isMaximized: !was, snapped: null,
+          ...(was
             ? { x: win._prevX, y: win._prevY, w: win._prevW, h: win._prevH }
             : { _prevX: win.x, _prevY: win.y, _prevW: win.w, _prevH: win.h,
-                x: 0, y: 0,
-                w: window.innerWidth,
-                h: window.innerHeight - 48 })
+                x: 0, y: 0, w: window.innerWidth, h: window.innerHeight - TASKBAR_H })
         }
       }
     }
   }),
 
-  // Restore from maximized with a specific position (for drag-to-restore)
   restoreAt: (id, x, y) => set((state) => {
     const win = state.windows[id]
     if (!win?.isMaximized) return state
     return {
       windows: {
         ...state.windows,
+        [id]: { ...win, isMaximized: false, snapped: null, x, y, w: win._prevW || 700, h: win._prevH || 500 }
+      }
+    }
+  }),
+
+  snapLeft: (id) => set((state) => {
+    const win = state.windows[id]
+    return {
+      snapPreview: null,
+      windows: {
+        ...state.windows,
         [id]: {
-          ...win,
-          isMaximized: false,
-          x,
-          y,
-          w: win._prevW || 700,
-          h: win._prevH || 500,
+          ...win, isMaximized: false, snapped: 'left',
+          _prevX: win._prevX ?? win.x, _prevY: win._prevY ?? win.y,
+          _prevW: win._prevW ?? win.w, _prevH: win._prevH ?? win.h,
+          x: 0, y: 0, w: Math.floor(window.innerWidth / 2), h: window.innerHeight - TASKBAR_H,
         }
       }
     }
   }),
+
+  snapRight: (id) => set((state) => {
+    const win = state.windows[id]
+    return {
+      snapPreview: null,
+      windows: {
+        ...state.windows,
+        [id]: {
+          ...win, isMaximized: false, snapped: 'right',
+          _prevX: win._prevX ?? win.x, _prevY: win._prevY ?? win.y,
+          _prevW: win._prevW ?? win.w, _prevH: win._prevH ?? win.h,
+          x: Math.floor(window.innerWidth / 2), y: 0,
+          w: Math.floor(window.innerWidth / 2), h: window.innerHeight - TASKBAR_H,
+        }
+      }
+    }
+  }),
+
+  setSnapPreview: (zone) => set({ snapPreview: zone }),
 }))

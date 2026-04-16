@@ -45,6 +45,31 @@ const APPS = [
   { id: 'contact', title: '연락처', icon: '✉', label: 'Contact', gradient: 'linear-gradient(135deg, #ef4444, #b91c1c)', component: ContactApp },
 ]
 
+/* ─── Snap Preview Overlay ─── */
+function SnapPreview() {
+  const snapPreview = useWindowStore((s) => s.snapPreview)
+  if (!snapPreview) return null
+
+  const positions = {
+    left:  { left: 4, top: 4, width: 'calc(50% - 6px)', height: 'calc(100vh - var(--taskbar-h) - 8px)' },
+    right: { right: 4, top: 4, width: 'calc(50% - 6px)', height: 'calc(100vh - var(--taskbar-h) - 8px)' },
+    top:   { left: 4, top: 4, width: 'calc(100% - 8px)', height: 'calc(100vh - var(--taskbar-h) - 8px)' },
+  }
+
+  return (
+    <div style={{
+      position: 'fixed', ...positions[snapPreview],
+      background: 'rgba(59,130,246,0.1)',
+      border: '2px solid rgba(59,130,246,0.3)',
+      borderRadius: 12,
+      zIndex: 5,
+      pointerEvents: 'none',
+      animation: 'snapPreviewPulse 1.5s ease infinite',
+      backdropFilter: 'blur(4px)',
+    }} />
+  )
+}
+
 /* ─── Boot Screen ─── */
 function BootScreen({ onDone }) {
   const [progress, setProgress] = useState(0)
@@ -189,12 +214,31 @@ export default function Desktop() {
     <>
       <BootScreen onDone={onBootDone} />
       {booted && (
-        <div style={{ position: 'relative', width: '100vw', height: '100vh', overflow: 'hidden', background: 'var(--bg-desktop)' }} onContextMenu={onContextMenu}>
-          <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', background: 'radial-gradient(ellipse 60% 40% at 15% 85%, rgba(59,130,246,0.06) 0%, transparent 60%), radial-gradient(ellipse 40% 50% at 85% 15%, rgba(139,92,246,0.05) 0%, transparent 55%), radial-gradient(ellipse 30% 30% at 50% 50%, rgba(20,30,50,0.3) 0%, transparent 70%)' }} />
+        <div style={{ position: 'relative', width: '100vw', height: '100vh', overflow: 'hidden' }} onContextMenu={onContextMenu}>
+          {/* Animated background */}
+          <div style={{
+            position: 'absolute', inset: 0,
+            background: 'linear-gradient(-45deg, #0a0e1a, #12102e, #0a1e3a, #0d1a14, #0a0e1a)',
+            backgroundSize: '500% 500%',
+            animation: 'bgShift 40s ease infinite',
+          }} />
+          {/* Ambient overlay */}
+          <div style={{
+            position: 'absolute', inset: 0, pointerEvents: 'none',
+            background: 'radial-gradient(ellipse 60% 40% at 15% 85%, rgba(59,130,246,0.05) 0%, transparent 60%), radial-gradient(ellipse 40% 50% at 85% 15%, rgba(139,92,246,0.04) 0%, transparent 55%)',
+          }} />
+
+          {/* Desktop icons */}
           {APPS.map((app, i) => <AppIcon key={app.id} id={app.id} label={app.label} icon={app.icon} gradient={app.gradient} index={i} />)}
+
+          {/* Snap preview overlay */}
+          <SnapPreview />
+
+          {/* Windows */}
           <div style={{ position: 'absolute', inset: 0, bottom: 'var(--taskbar-h)' }}>
             {APPS.map(app => <Window key={app.id} id={app.id} title={app.title} icon={app.icon}><app.component /></Window>)}
           </div>
+
           {ctxMenu && <ContextMenu x={ctxMenu.x} y={ctxMenu.y} onClose={() => setCtxMenu(null)} />}
           <Taskbar apps={APPS} />
         </div>
