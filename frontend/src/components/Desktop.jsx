@@ -9,6 +9,12 @@ import ClaudeApp from './apps/Claude'
 import SystemMonitor from './apps/SystemMonitor'
 import KasmApp from './apps/Kasm'
 import SettingsApp from './apps/Settings'
+import ClaudeCodeApp from './apps/ClaudeCode'
+import GitDashboardApp from './apps/GitDashboard'
+import CICDApp from './apps/CICD'
+import FileManagerApp from './apps/FileManager'
+import MemoApp from './apps/Memo'
+import CalculatorApp from './apps/Calculator'
 import ProfileApp from './apps/Profile'
 import ResumeApp from './apps/Resume'
 import ProjectsApp from './apps/Projects'
@@ -64,6 +70,57 @@ const APPS = [
     label: 'Settings',
     gradient: 'linear-gradient(135deg, #2d2d2d 0%, #1a1a1a 100%)',
     component: SettingsApp,
+  },
+  // ─── Claude Code ───
+  {
+    id: 'claude-code',
+    title: 'Claude Code',
+    icon: '🤖',
+    label: 'Claude Code',
+    gradient: 'linear-gradient(135deg, #d97706 0%, #92400e 100%)',
+    component: ClaudeCodeApp,
+  },
+  // ─── Dev Tools ───
+  {
+    id: 'git',
+    title: 'Git 대시보드',
+    icon: '🔀',
+    label: 'Git',
+    gradient: 'linear-gradient(135deg, #f97316 0%, #c2410c 100%)',
+    component: GitDashboardApp,
+  },
+  {
+    id: 'cicd',
+    title: 'CI/CD',
+    icon: '🔨',
+    label: 'CI/CD',
+    gradient: 'linear-gradient(135deg, #14b8a6 0%, #0f766e 100%)',
+    component: CICDApp,
+  },
+  {
+    id: 'filemanager',
+    title: '파일 관리자',
+    icon: '📂',
+    label: 'Files',
+    gradient: 'linear-gradient(135deg, #eab308 0%, #a16207 100%)',
+    component: FileManagerApp,
+  },
+  // ─── Utilities ───
+  {
+    id: 'memo',
+    title: '메모장',
+    icon: '📒',
+    label: 'Memo',
+    gradient: 'linear-gradient(135deg, #fbbf24 0%, #d97706 100%)',
+    component: MemoApp,
+  },
+  {
+    id: 'calculator',
+    title: '계산기',
+    icon: '🧮',
+    label: 'Calc',
+    gradient: 'linear-gradient(135deg, #6b7280 0%, #374151 100%)',
+    component: CalculatorApp,
   },
   // ─── Portfolio Apps ───
   {
@@ -141,13 +198,14 @@ export default function Desktop() {
         `,
       }} />
 
-      {/* Desktop icons — left column */}
+      {/* Desktop icons — grid */}
       <div style={{
         position: 'absolute',
         top: 16,
         left: 16,
-        display: 'flex',
-        flexDirection: 'column',
+        display: 'grid',
+        gridTemplateColumns: 'repeat(2, 80px)',
+        gridAutoRows: 'auto',
         gap: 4,
         zIndex: 1,
       }}>
