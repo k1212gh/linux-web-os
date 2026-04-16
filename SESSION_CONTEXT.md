@@ -1,4 +1,4 @@
-# 세션 컨텍스트 — 2026-04-16
+# 세션 컨텍스트 — 2026-04-17 (업데이트)
 
 > 다른 기기에서 이어서 작업할 때 이 파일을 먼저 읽으세요.
 
@@ -35,16 +35,39 @@
 
 **브랜치**: `feat/portfolio-apps` (main에서 분기)
 
-### 추가된 파일
+### 추가된 파일 (Phase 0~5 완료)
 
 ```
 ENHANCEMENT_PLAN.md          ← 전체 7-Phase 고도화 계획서
 TEST_PROMPT.md               ← 69개 항목 QA 테스트 프롬프트
-SESSION_CONTEXT.md           ← 이 파일 (세션 컨텍스트)
+SESSION_CONTEXT.md           ← 이 파일
 
 frontend/src/data/
   profile.js                 ← 프로필/이력서 데이터
   projects.js                ← 프로젝트 5개 데이터
+
+frontend/src/hooks/
+  useWebSocket.js            ← 재사용 WebSocket 훅
+
+frontend/src/components/apps/
+  ClaudeCode.jsx             ← Phase 1: Claude Code 전용 앱 (WS + 도구 승인 UI)
+  claude/ConversationView.jsx ← 대화 뷰 (메시지 + 도구 호출 렌더링)
+  GitDashboard.jsx           ← Phase 3: Git 브랜치/커밋/상태
+  CICD.jsx                   ← Phase 3: 빌드/테스트 파이프라인 + 로그 스트리밍
+  FileManager.jsx            ← Phase 3: 파일 탐색/미리보기/업로드
+  Memo.jsx                   ← Phase 5: 메모장 (localStorage)
+  Calculator.jsx             ← Phase 5: 계산기
+
+backend/services/
+  claude_session.py          ← Claude 프로세스 관리 (PTY)
+
+backend/routers/
+  claude.py                  ← Claude Code REST + WebSocket
+  blog.py                    ← 블로그 CRUD (JSON 파일)
+  contact.py                 ← 방명록 CRUD
+  git.py                     ← Git CLI 래핑
+  cicd.py                    ← 파이프라인 실행 + WS 로그
+  files.py                   ← 파일 매니저 API (경로 보안)
 
 frontend/src/components/apps/
   Profile.jsx                ← 프로필 카드 앱 (스킬바, 링크)
