@@ -1,10 +1,12 @@
 const events = [
-  { date: '2026.04', title: 'AgentOS 포트폴리오', desc: 'Web OS 스타일 인터랙티브 포트폴리오 개발', icon: '💻', active: true },
-  { date: '2025.03', title: 'Synaptic 개발 시작', desc: '노션 시맨틱 검색 SaaS 프로젝트', icon: '🔍', active: true },
-  { date: '2025.01', title: 'ALOE MCP Copilot', desc: 'MCP 기반 LLM 코파일럿 개발', icon: '🤖' },
-  { date: '2024.11', title: 'Hecto AI Challenge', desc: 'EfficientNet-B4 + SBI 딥페이크 탐지', icon: '🔒' },
-  { date: '2024.09', title: 'SSAFY 관통 프로젝트', desc: '멀티 서비스 백엔드 아키텍처', icon: '📡' },
-  { date: '2024.07', title: 'SSAFY 14기 입과', desc: '삼성 청년 SW 아카데미 서울', icon: '🏫' },
+  { date: '2026.04', title: 'AgentOS 개발', desc: 'Web OS 스타일 인터랙티브 포트폴리오 & 클라우드 워크스테이션', icon: '💻', active: true },
+  { date: '2025.03', title: 'Synaptic 개발', desc: '노션 시맨틱 검색 SaaS — Next.js + Supabase + Claude API', icon: '🔍', active: true },
+  { date: '2025.01', title: 'ALOE MCP Copilot', desc: 'MCP 기반 로그 분석 LLM 코파일럿', icon: '🤖' },
+  { date: '2024.11', title: '핀테크 AI 프로젝트', desc: 'SSAFY — 금융 AI 서비스 (LangChain + RAG)', icon: '💰' },
+  { date: '2024.11', title: 'Hecto AI Challenge', desc: 'EfficientNet-B4 + SBI 딥페이크 탐지 대회', icon: '🔒' },
+  { date: '2024.09', title: 'SSAFY 관통 프로젝트', desc: '멀티 서비스 백엔드 + AI 모듈 통합', icon: '📡' },
+  { date: '2024.07', title: 'SSAFY 14기 입과', desc: '삼성 청년 SW 아카데미 서울 캠퍼스', icon: '🏫' },
+  { date: '2024', title: '한컴 AI 아카데미', desc: 'AWS EC2 + Transfer Learning + LangChain 부트캠프', icon: '📚' },
   { date: '2019.03', title: '한국공학대학교 입학', desc: '컴퓨터공학과', icon: '🎓' },
 ]
 
