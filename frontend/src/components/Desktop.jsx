@@ -16,6 +16,7 @@ import FileManagerApp from './apps/FileManager'
 import MemoApp from './apps/Memo'
 import CalculatorApp from './apps/Calculator'
 import LLMDashboardApp from './apps/LLMDashboard'
+import HarnessManagerApp from './apps/HarnessManager'
 import ProfileApp from './apps/Profile'
 import ResumeApp from './apps/Resume'
 import ProjectsApp from './apps/Projects'
@@ -36,6 +37,7 @@ const APPS = [
   { id: 'filemanager', title: '파일 관리자', icon: '📂', label: 'Files', gradient: 'linear-gradient(135deg, #eab308, #a16207)', component: FileManagerApp },
   { id: 'memo', title: '메모장', icon: '📒', label: 'Memo', gradient: 'linear-gradient(135deg, #fbbf24, #d97706)', component: MemoApp },
   { id: 'calculator', title: '계산기', icon: '🧮', label: 'Calc', gradient: 'linear-gradient(135deg, #6b7280, #374151)', component: CalculatorApp },
+  { id: 'harness', title: '하네스', icon: '🔧', label: 'Harness', gradient: 'linear-gradient(135deg, #a855f7, #7e22ce)', component: HarnessManagerApp },
   { id: 'settings', title: '설정', icon: '⚙', label: 'Settings', gradient: 'linear-gradient(135deg, #2d2d2d, #1a1a1a)', component: SettingsApp },
   { id: 'profile', title: '프로필', icon: '👤', label: 'Profile', gradient: 'linear-gradient(135deg, #3b82f6, #1d4ed8)', component: ProfileApp },
   { id: 'resume', title: '이력서', icon: '📄', label: 'Resume', gradient: 'linear-gradient(135deg, #22c55e, #15803d)', component: ResumeApp },

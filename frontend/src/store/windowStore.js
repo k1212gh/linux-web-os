@@ -15,6 +15,7 @@ const DEFAULT_SIZES = {
   git:           { w: 680, h: 480 },
   cicd:          { w: 700, h: 500 },
   filemanager:   { w: 780, h: 500 },
+  harness:    { w: 700, h: 520 },
   memo:       { w: 520, h: 440 },
   calculator: { w: 320, h: 440 },
   profile:   { w: 520, h: 600 },

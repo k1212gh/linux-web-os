@@ -18,6 +18,7 @@ from routers import contact as contact_router
 from routers import git as git_router
 from routers import cicd as cicd_router
 from routers import files as files_router
+from routers import harness as harness_router
 
 CONFIG_PATH = Path(__file__).parent / ".env.json"
 
@@ -57,6 +58,7 @@ app.include_router(contact_router.router, prefix="/api/contact", tags=["contact"
 app.include_router(git_router.router,   prefix="/api/git",     tags=["git"])
 app.include_router(cicd_router.router,  prefix="/api/cicd",    tags=["cicd"])
 app.include_router(files_router.router, prefix="/api/files",   tags=["files"])
+app.include_router(harness_router.router, prefix="/api/harness", tags=["harness"])
 
 # Serve built frontend
 STATIC_DIR = Path(__file__).parent / "static"
