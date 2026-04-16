@@ -7,9 +7,9 @@ const TITLEBAR_H = 38
 export default function Window({ id, title, icon, children }) {
   const { windows, close, minimize, maximize, focus, move, resize } = useWindowStore()
   const win = windows[id]
-  if (!win || !win.isOpen || win.isMinimized) return null
-
   const isActive = useWindowStore((s) => s.activeId === id)
+
+  if (!win || !win.isOpen || win.isMinimized) return null
 
   return (
     <Rnd

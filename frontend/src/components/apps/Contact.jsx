@@ -15,13 +15,13 @@ const s = {
   methodValue: { fontSize: 12, color: 'var(--text-muted)' },
   input: {
     width: '100%', padding: '10px 14px', borderRadius: 8,
-    border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.03)',
+    border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.06)',
     color: 'var(--text-primary)', fontSize: 14, fontFamily: 'inherit',
     outline: 'none', marginBottom: 8, boxSizing: 'border-box',
   },
   textarea: {
     width: '100%', padding: '10px 14px', borderRadius: 8,
-    border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.03)',
+    border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.06)',
     color: 'var(--text-primary)', fontSize: 14, fontFamily: 'inherit',
     outline: 'none', minHeight: 100, resize: 'vertical', marginBottom: 8, boxSizing: 'border-box',
   },

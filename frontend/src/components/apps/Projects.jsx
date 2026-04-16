@@ -59,7 +59,7 @@ export default function ProjectsApp() {
         <h3 style={s.h3}>프로젝트</h3>
         <div style={s.filters}>
           {filters.map(f => (
-            <button key={f.key} style={s.filter(filter === f.key)} onClick={() => setFilter(f.key)}>
+            <button key={f.key} style={s.filter(filter === f.key)} onClick={() => { setFilter(f.key); setDetail(null) }}>
               {f.label}
             </button>
           ))}
