@@ -204,6 +204,7 @@ export default function SettingsApp() {
           { key: 'VSCODE_TUNNEL_URL', label: 'VS Code Tunnel URL', placeholder: 'https://vscode.dev/tunnel/...' },
           { key: 'KASM_URL', label: 'KasmVNC URL', placeholder: 'http://localhost:6901' },
           { key: 'PROJECTS_BASE', label: '프로젝트 기본 경로', placeholder: '/home/user/projects' },
+          { key: 'OBSIDIAN_VAULT', label: 'Obsidian 볼트 경로', placeholder: '/home/user/ObsidianVault' },
         ].map(({ key, label, type, placeholder }) => (
           <div key={key} style={s.inputGroup}>
             <label style={s.label}>{label}</label>

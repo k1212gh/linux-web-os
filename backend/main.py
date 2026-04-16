@@ -19,6 +19,7 @@ from routers import git as git_router
 from routers import cicd as cicd_router
 from routers import files as files_router
 from routers import harness as harness_router
+from routers import obsidian as obsidian_router
 
 CONFIG_PATH = Path(__file__).parent / ".env.json"
 
@@ -59,6 +60,7 @@ app.include_router(git_router.router,   prefix="/api/git",     tags=["git"])
 app.include_router(cicd_router.router,  prefix="/api/cicd",    tags=["cicd"])
 app.include_router(files_router.router, prefix="/api/files",   tags=["files"])
 app.include_router(harness_router.router, prefix="/api/harness", tags=["harness"])
+app.include_router(obsidian_router.router, prefix="/api/obsidian", tags=["obsidian"])
 
 # Serve built frontend
 STATIC_DIR = Path(__file__).parent / "static"
