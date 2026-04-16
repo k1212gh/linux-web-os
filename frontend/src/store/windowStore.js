@@ -10,6 +10,12 @@ const DEFAULT_SIZES = {
   files:     { w: 600, h: 440 },
   kasm:      { w: 900, h: 600 },
   settings:  { w: 480, h: 380 },
+  profile:   { w: 520, h: 600 },
+  resume:    { w: 680, h: 560 },
+  projects:  { w: 760, h: 520 },
+  blog:      { w: 800, h: 560 },
+  timeline:  { w: 560, h: 520 },
+  contact:   { w: 480, h: 520 },
 }
 
 const DEFAULT_POS = (id, index = 0) => ({

@@ -9,6 +9,12 @@ import ClaudeApp from './apps/Claude'
 import SystemMonitor from './apps/SystemMonitor'
 import KasmApp from './apps/Kasm'
 import SettingsApp from './apps/Settings'
+import ProfileApp from './apps/Profile'
+import ResumeApp from './apps/Resume'
+import ProjectsApp from './apps/Projects'
+import BlogApp from './apps/Blog'
+import TimelineApp from './apps/Timeline'
+import ContactApp from './apps/Contact'
 
 const APPS = [
   {
@@ -58,6 +64,55 @@ const APPS = [
     label: 'Settings',
     gradient: 'linear-gradient(135deg, #2d2d2d 0%, #1a1a1a 100%)',
     component: SettingsApp,
+  },
+  // ─── Portfolio Apps ───
+  {
+    id: 'profile',
+    title: '프로필',
+    icon: '👤',
+    label: 'Profile',
+    gradient: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
+    component: ProfileApp,
+  },
+  {
+    id: 'resume',
+    title: '이력서',
+    icon: '📄',
+    label: 'Resume',
+    gradient: 'linear-gradient(135deg, #22c55e 0%, #15803d 100%)',
+    component: ResumeApp,
+  },
+  {
+    id: 'projects',
+    title: '프로젝트',
+    icon: '💼',
+    label: 'Projects',
+    gradient: 'linear-gradient(135deg, #f59e0b 0%, #b45309 100%)',
+    component: ProjectsApp,
+  },
+  {
+    id: 'blog',
+    title: '블로그',
+    icon: '📝',
+    label: 'Blog',
+    gradient: 'linear-gradient(135deg, #6366f1 0%, #4338ca 100%)',
+    component: BlogApp,
+  },
+  {
+    id: 'timeline',
+    title: '타임라인',
+    icon: '📅',
+    label: 'Timeline',
+    gradient: 'linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)',
+    component: TimelineApp,
+  },
+  {
+    id: 'contact',
+    title: '연락처',
+    icon: '✉',
+    label: 'Contact',
+    gradient: 'linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)',
+    component: ContactApp,
   },
 ]
 
