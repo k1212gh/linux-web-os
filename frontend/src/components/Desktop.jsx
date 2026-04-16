@@ -168,7 +168,7 @@ function StartMenu({ onClose, apps }) {
         {/* Footer */}
         <div style={{ padding: '8px 16px', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>AgentOS</span>
-          <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>Win 키로 열기/닫기</span>
+          <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>전체화면에서 Win키 사용 가능</span>
         </div>
       </div>
     </>
@@ -238,8 +238,8 @@ export default function Desktop() {
       const tag = e.target.tagName
       const isInput = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT'
 
-      // Win key (Meta) — toggle start menu
-      if (e.key === 'Meta') {
+      // Win key (Meta) — only in fullscreen mode to avoid OS conflict
+      if (e.key === 'Meta' && document.fullscreenElement) {
         e.preventDefault()
         setStartMenu(prev => !prev)
         return

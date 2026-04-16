@@ -39,8 +39,12 @@ function saveLayout(windows) {
   try {
     const layout = {}
     Object.entries(windows).forEach(([id, w]) => {
-      if (w.isOpen) {
-        layout[id] = { x: w.x, y: w.y, w: w.w, h: w.h, isMaximized: w.isMaximized, snapped: w.snapped }
+      if (w.isOpen && !w.isMaximized && !w.snapped) {
+        // Only save normal (non-maximized, non-snapped) positions
+        layout[id] = { x: w.x, y: w.y, w: w.w, h: w.h }
+      } else if (w.isOpen && (w.isMaximized || w.snapped) && w._prevW) {
+        // Save the pre-maximize position instead
+        layout[id] = { x: w._prevX, y: w._prevY, w: w._prevW, h: w._prevH }
       }
     })
     localStorage.setItem(LAYOUT_KEY, JSON.stringify(layout))
@@ -67,18 +71,25 @@ export const useWindowStore = create((set, get) => ({
     if (state.windows[app.id]) return state
     const size = DEFAULT_SIZES[app.id] || { w: 600, h: 400 }
     const pos = DEFAULT_POS(app.id, Object.keys(state.windows).length)
-    // Restore saved position if exists
+    // Restore saved position (but clamp to current viewport)
     const saved = loadLayout()[app.id]
+    let sx = saved?.x ?? pos.x
+    let sy = saved?.y ?? pos.y
+    let sw = saved?.w ?? size.w
+    let sh = saved?.h ?? size.h
+    // Clamp to viewport — prevent windows opening off-screen
+    const vw = window.innerWidth
+    const vh = window.innerHeight - TASKBAR_H
+    if (sw > vw) sw = Math.min(size.w, vw - 40)
+    if (sh > vh) sh = Math.min(size.h, vh - 40)
+    if (sx < 0 || sx + sw > vw) sx = pos.x
+    if (sy < 0 || sy + sh > vh) sy = pos.y
     return {
       windows: {
         ...state.windows,
         [app.id]: {
           ...app, isOpen: false, isMinimized: false, isClosing: false,
-          zIndex: zCounter,
-          x: saved?.x ?? pos.x,
-          y: saved?.y ?? pos.y,
-          w: saved?.w ?? size.w,
-          h: saved?.h ?? size.h,
+          zIndex: zCounter, x: sx, y: sy, w: sw, h: sh,
         }
       }
     }
