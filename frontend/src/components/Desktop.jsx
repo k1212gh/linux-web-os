@@ -91,9 +91,14 @@ function ContextMenu({ x, y, onClose }) {
     { label: '📊 시스템 모니터', action: () => open('monitor') },
     { label: '⚙ 설정', action: () => open('settings') },
     { type: 'divider' },
-    { label: '🔄 아이콘 위치 초기화', action: () => { localStorage.removeItem('agentos-icon-positions'); location.reload() } },
-    { label: '⛶ 전체화면', action: () => { document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen() } },
+    { label: '⛶ 전체화면', shortcut: 'F11', action: () => { document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen() } },
+    { label: '🔀 창 전환', shortcut: 'Ctrl+`', action: () => {
+      const wins = Object.values(windows).filter(w => w.isOpen)
+      if (wins.length >= 2) { const ids = wins.map(w => w.id); const idx = ids.indexOf(useWindowStore.getState().activeId); useWindowStore.getState().focus(ids[(idx + 1) % ids.length]) }
+    }},
+    { label: '🖥 바탕화면 보기', shortcut: 'Ctrl+D', action: () => Object.values(windows).forEach(w => { if (w.isOpen && !w.isMinimized) useWindowStore.getState().minimize(w.id) }) },
     { type: 'divider' },
+    { label: '🔄 아이콘 위치 초기화', action: () => { localStorage.removeItem('agentos-icon-positions'); location.reload() } },
     { label: '🗑 모든 창 닫기', action: () => Object.keys(windows).forEach(id => { if (windows[id].isOpen) useWindowStore.getState().close(id) }) },
   ]
   // Adjust position to keep menu in viewport
@@ -107,10 +112,11 @@ function ContextMenu({ x, y, onClose }) {
           if (item.type === 'divider') return <div key={i} style={{ height: 1, background: 'rgba(255,255,255,0.06)', margin: '4px 0' }} />
           return (
             <div key={i} onClick={() => { item.action(); onClose() }}
-              style={{ padding: '7px 14px', fontSize: 12.5, color: 'var(--text-primary)', cursor: 'pointer', transition: 'background 0.1s' }}
+              style={{ padding: '7px 14px', fontSize: 12.5, color: 'var(--text-primary)', cursor: 'pointer', transition: 'background 0.1s', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
               onMouseEnter={e => e.currentTarget.style.background = 'rgba(59,130,246,0.15)'}
               onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-              {item.label}
+              <span>{item.label}</span>
+              {item.shortcut && <span style={{ fontSize: 10, color: 'var(--text-muted)', marginLeft: 12 }}>{item.shortcut}</span>}
             </div>
           )
         })}
@@ -128,11 +134,26 @@ export default function Desktop() {
   useEffect(() => { APPS.forEach(app => registerApp(app)) }, [])
 
   // Keyboard shortcuts
+  // Note: Alt+Tab / Alt+F4 are captured by the OS/browser and never reach JS.
+  // We use Ctrl-based alternatives that work in the browser.
   useEffect(() => {
     const handler = (e) => {
-      if (e.key === 'F11') { e.preventDefault(); document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen() }
-      if (e.altKey && e.key === 'F4') { e.preventDefault(); const a = useWindowStore.getState().activeId; if (a) close(a) }
-      if (e.altKey && e.key === 'Tab') {
+      const tag = e.target.tagName
+      const isInput = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT'
+
+      // F11 — fullscreen toggle (works even inside browser)
+      if (e.key === 'F11') {
+        e.preventDefault()
+        document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen()
+      }
+      // Ctrl+W — close active window (override browser tab close)
+      if (e.ctrlKey && e.key === 'w' && !isInput) {
+        e.preventDefault()
+        const a = useWindowStore.getState().activeId
+        if (a) close(a)
+      }
+      // Ctrl+` (backtick) — cycle windows (like Alt+Tab)
+      if (e.ctrlKey && e.key === '`') {
         e.preventDefault()
         const wins = Object.values(useWindowStore.getState().windows).filter(w => w.isOpen)
         if (wins.length < 2) return
@@ -140,9 +161,16 @@ export default function Desktop() {
         const idx = ids.indexOf(useWindowStore.getState().activeId)
         focus(ids[(idx + 1) % ids.length])
       }
-      if (e.altKey && (e.key === 'd' || e.key === 'D')) {
+      // Ctrl+D — show desktop (minimize all)
+      if (e.ctrlKey && (e.key === 'd' || e.key === 'D') && !isInput) {
         e.preventDefault()
-        Object.values(useWindowStore.getState().windows).forEach(w => { if (w.isOpen && !w.isMinimized) minimize(w.id) })
+        Object.values(useWindowStore.getState().windows).forEach(w => {
+          if (w.isOpen && !w.isMinimized) minimize(w.id)
+        })
+      }
+      // Escape — close context menu / deselect
+      if (e.key === 'Escape') {
+        setCtxMenu(null)
       }
     }
     window.addEventListener('keydown', handler)
