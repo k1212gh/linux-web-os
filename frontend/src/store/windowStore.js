@@ -71,19 +71,19 @@ export const useWindowStore = create((set, get) => ({
     if (state.windows[app.id]) return state
     const size = DEFAULT_SIZES[app.id] || { w: 600, h: 400 }
     const pos = DEFAULT_POS(app.id, Object.keys(state.windows).length)
-    // Restore saved position (but clamp to current viewport)
+    // Restore saved position (but always clamp to viewport)
     const saved = loadLayout()[app.id]
-    let sx = saved?.x ?? pos.x
-    let sy = saved?.y ?? pos.y
-    let sw = saved?.w ?? size.w
-    let sh = saved?.h ?? size.h
-    // Clamp to viewport — prevent windows opening off-screen
     const vw = window.innerWidth
     const vh = window.innerHeight - TASKBAR_H
-    if (sw > vw) sw = Math.min(size.w, vw - 40)
-    if (sh > vh) sh = Math.min(size.h, vh - 40)
-    if (sx < 0 || sx + sw > vw) sx = pos.x
-    if (sy < 0 || sy + sh > vh) sy = pos.y
+    let sw = Math.min(saved?.w ?? size.w, vw - 20)
+    let sh = Math.min(saved?.h ?? size.h, vh - 20)
+    let sx = saved?.x ?? pos.x
+    let sy = saved?.y ?? pos.y
+    // Ensure at least 40px of titlebar is visible
+    if (sx < 0) sx = 20
+    if (sy < 0) sy = 20
+    if (sx + 40 > vw) sx = Math.max(20, vw - sw - 20)
+    if (sy + 40 > vh) sy = Math.max(20, vh - sh - 20)
     return {
       windows: {
         ...state.windows,
@@ -97,11 +97,22 @@ export const useWindowStore = create((set, get) => ({
 
   open: (id) => set((state) => {
     const z = ++zCounter
+    const win = state.windows[id]
+    // Clamp position on open to prevent off-screen
+    let { x, y, w, h } = win || {}
+    const vw = window.innerWidth
+    const vh = window.innerHeight - TASKBAR_H
+    if (x < 0) x = 20
+    if (y < 0) y = 20
+    if (w > vw - 20) w = vw - 40
+    if (h > vh - 20) h = vh - 40
+    if (x + 40 > vw) x = Math.max(20, vw - w - 20)
+    if (y + 40 > vh) y = Math.max(20, vh - h - 20)
     return {
       activeId: id,
       windows: {
         ...state.windows,
-        [id]: { ...state.windows[id], isOpen: true, isMinimized: false, isClosing: false, zIndex: z }
+        [id]: { ...state.windows[id], isOpen: true, isMinimized: false, isClosing: false, zIndex: z, x, y, w, h }
       }
     }
   }),

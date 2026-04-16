@@ -12,12 +12,14 @@ const WELCOME = `안녕하세요! AgentOS AI Chat입니다.
 
 const PROVIDER_COLORS = {
   anthropic: { bg: 'linear-gradient(135deg, #c47f6b, #a0522d)', icon: '✦' },
+  'claude-cli': { bg: 'linear-gradient(135deg, #d97706, #92400e)', icon: '⚡' },
   gemini: { bg: 'linear-gradient(135deg, #4285f4, #34a853)', icon: '◆' },
   openai: { bg: 'linear-gradient(135deg, #10a37f, #0d8c6d)', icon: '●' },
   ollama: { bg: 'linear-gradient(135deg, #6b7280, #374151)', icon: '🖥' },
 }
 
 const getProvider = (m) => {
+  if (m === 'claude-cli') return 'claude-cli'
   if (m.startsWith('claude')) return 'anthropic'
   if (m.startsWith('gemini')) return 'gemini'
   if (m.startsWith('gpt') || m.startsWith('o')) return 'openai'
@@ -38,8 +40,11 @@ export default function ClaudeApp() {
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages])
 
+  const [cliStatus, setCliStatus] = useState({})
+
   useEffect(() => {
     fetch('/api/models').then(r => r.json()).then(d => { if (d.cloud || d.local) setAllModels(d) }).catch(() => {})
+    fetch('/api/cli-status').then(r => r.json()).then(setCliStatus).catch(() => {})
   }, [])
 
   const send = async () => {
@@ -50,7 +55,8 @@ export default function ClaudeApp() {
     setInput('')
     setLoading(true)
     try {
-      const res = await fetch('/api/chat', {
+      const endpoint = model === 'claude-cli' ? '/api/chat/cli' : '/api/chat'
+      const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -80,6 +86,7 @@ export default function ClaudeApp() {
           {allModels.gemini?.length > 0 && <optgroup label="◆ Gemini (Google)">{allModels.gemini.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}</optgroup>}
           {allModels.openai?.length > 0 && <optgroup label="● GPT (OpenAI)">{allModels.openai.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}</optgroup>}
           {allModels.local?.length > 0 && <optgroup label="🖥 로컬 (Ollama)">{allModels.local.map(m => <option key={m.id} value={m.id}>{m.name}{m.size ? ` (${(m.size/1e9).toFixed(1)}GB)` : ''}</option>)}</optgroup>}
+          {cliStatus.claude && <optgroup label="⚡ CLI (API키 불필요)"><option value="claude-cli">Claude Code CLI</option></optgroup>}
           {!allModels.cloud?.length && <>
             <optgroup label="✦ Claude"><option value="claude-sonnet-4-20250514">Claude Sonnet 4</option><option value="claude-opus-4-20250514">Claude Opus 4</option></optgroup>
             <optgroup label="◆ Gemini"><option value="gemini-2.5-pro">Gemini 2.5 Pro</option><option value="gemini-2.5-flash">Gemini 2.5 Flash</option></optgroup>

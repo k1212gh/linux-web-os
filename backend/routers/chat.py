@@ -89,10 +89,17 @@ async def list_models():
 
 
 # ─── Anthropic (Claude) ───
+# Priority: 1) claude CLI  2) API key
 async def _anthropic_chat(req: ChatRequest):
+    # Try Claude Code CLI first (no API key needed if logged in)
+    claude_result = await _try_claude_cli(req)
+    if claude_result:
+        return claude_result
+
+    # Fallback to API key
     api_key = os.environ.get("ANTHROPIC_API_KEY", "")
     if not api_key:
-        raise HTTPException(status_code=503, detail="ANTHROPIC_API_KEY not configured")
+        raise HTTPException(status_code=503, detail="Claude Code CLI not found and ANTHROPIC_API_KEY not configured. Install: npm i -g @anthropic-ai/claude-code")
 
     async with httpx.AsyncClient(timeout=60) as client:
         resp = await client.post(
@@ -179,3 +186,79 @@ async def _ollama_chat(req: ChatRequest):
             }
         except httpx.ConnectError:
             raise HTTPException(status_code=503, detail="Ollama not running. Run: ollama serve")
+
+
+# ─── Claude Code CLI ───
+async def _try_claude_cli(req: ChatRequest):
+    """Try to use claude CLI for chat. Returns None if CLI not available."""
+    import shutil
+    import asyncio
+
+    claude_path = shutil.which("claude")
+    if not claude_path:
+        return None
+
+    # Build the prompt from messages
+    last_msg = req.messages[-1].content if req.messages else ""
+    cwd = os.environ.get("PROJECTS_BASE", os.path.expanduser("~"))
+
+    try:
+        proc = await asyncio.create_subprocess_exec(
+            claude_path, "-p", last_msg,
+            "--output-format", "text",
+            cwd=cwd,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+        )
+        stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=120)
+        output = stdout.decode("utf-8", errors="replace").strip()
+
+        if proc.returncode == 0 and output:
+            return {"content": output, "model": "claude-code-cli", "provider": "claude-cli"}
+        return None
+    except (asyncio.TimeoutError, Exception):
+        return None
+
+
+@router.post("/chat/cli")
+async def chat_via_cli(req: ChatRequest):
+    """Direct Claude Code CLI chat — uses claude -p with a project directory."""
+    import shutil
+    import asyncio
+
+    claude_path = shutil.which("claude")
+    if not claude_path:
+        raise HTTPException(status_code=503, detail="Claude Code CLI not installed. Run: npm i -g @anthropic-ai/claude-code")
+
+    last_msg = req.messages[-1].content if req.messages else ""
+    cwd = os.environ.get("PROJECTS_BASE", os.path.expanduser("~"))
+
+    try:
+        proc = await asyncio.create_subprocess_exec(
+            claude_path, "-p", last_msg,
+            "--output-format", "text",
+            cwd=cwd,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+        )
+        stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=120)
+        output = stdout.decode("utf-8", errors="replace").strip()
+
+        if proc.returncode != 0:
+            err = stderr.decode("utf-8", errors="replace").strip()
+            raise HTTPException(status_code=500, detail=f"Claude CLI error: {err}")
+
+        return {"content": output, "model": "claude-code-cli", "provider": "claude-cli"}
+    except asyncio.TimeoutError:
+        raise HTTPException(status_code=504, detail="Claude CLI timeout (120s)")
+
+
+@router.get("/cli-status")
+async def cli_status():
+    """Check which CLI tools are available."""
+    import shutil
+    return {
+        "claude": shutil.which("claude") is not None,
+        "gemini": shutil.which("gemini") is not None,
+        "codex": shutil.which("codex") is not None,
+    }
