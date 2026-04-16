@@ -17,8 +17,17 @@ export default function ClaudeApp() {
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [model, setModel] = useState('claude-sonnet-4-20250514')
+  const [localModels, setLocalModels] = useState([])
   const bottomRef = useRef(null)
   const inputRef = useRef(null)
+
+  // Fetch available models (cloud + local)
+  useEffect(() => {
+    fetch('/api/models')
+      .then(r => r.json())
+      .then(data => { if (data.local) setLocalModels(data.local) })
+      .catch(() => {})
+  }, [])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -75,9 +84,18 @@ export default function ClaudeApp() {
           style={{ fontSize: 11, background: 'rgba(255,255,255,0.06)', border: '1px solid var(--border)',
             borderRadius: 6, color: 'var(--text-secondary)', padding: '3px 8px', cursor: 'pointer' }}
         >
-          <option value="claude-sonnet-4-20250514">Claude Sonnet 4</option>
-          <option value="claude-opus-4-20250514">Claude Opus 4</option>
-          <option value="claude-haiku-4-5-20251001">Claude Haiku</option>
+          <optgroup label="☁️ Cloud (Anthropic)">
+            <option value="claude-sonnet-4-20250514">Claude Sonnet 4</option>
+            <option value="claude-opus-4-20250514">Claude Opus 4</option>
+            <option value="claude-haiku-4-5-20251001">Claude Haiku 4.5</option>
+          </optgroup>
+          {localModels.length > 0 && (
+            <optgroup label="🖥️ Local (Ollama)">
+              {localModels.map(m => (
+                <option key={m.id} value={m.id}>{m.name} {m.size ? `(${(m.size / 1e9).toFixed(1)}GB)` : ''}</option>
+              ))}
+            </optgroup>
+          )}
         </select>
       </div>
 

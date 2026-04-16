@@ -11,6 +11,7 @@ const DEFAULT_SIZES = {
   kasm:      { w: 900, h: 600 },
   settings:  { w: 480, h: 380 },
   'claude-code': { w: 860, h: 600 },
+  'llm-dashboard': { w: 900, h: 600 },
   git:           { w: 680, h: 480 },
   cicd:          { w: 700, h: 500 },
   filemanager:   { w: 780, h: 500 },
