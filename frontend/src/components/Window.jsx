@@ -9,9 +9,45 @@ export default function Window({ id, title, icon, children }) {
   const win = windows[id]
   const isActive = useWindowStore((s) => s.activeId === id)
   const [btnHover, setBtnHover] = useState(null)
-  const [titleMenu, setTitleMenu] = useState(null) // {x, y} or null
+  const [titleMenu, setTitleMenu] = useState(null)
   const dragStartRef = useRef(null)
 
+  // ALL hooks must be above this early return
+  const onTitleDoubleClick = useCallback((e) => {
+    if (e.target.closest('button')) return
+    maximize(id)
+  }, [id, maximize])
+
+  const onTitleContextMenu = useCallback((e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setTitleMenu({ x: e.clientX, y: e.clientY })
+  }, [])
+
+  const onDragStart = useCallback((e, d) => {
+    if (win?.isMaximized) {
+      const newW = win._prevW || 700
+      const newH = win._prevH || 500
+      const newX = Math.max(0, d.x - newW / 2)
+      const newY = d.y
+      maximize(id)
+      setTimeout(() => {
+        move(id, newX, newY)
+        resize(id, newW, newH, newX, newY)
+      }, 0)
+    }
+    dragStartRef.current = { x: d.x, y: d.y }
+  }, [win?.isMaximized, win?._prevW, win?._prevH, id, maximize, move, resize])
+
+  const onDragStop = useCallback((e, d) => {
+    if (d.y <= 2 && !win?.isMaximized) {
+      maximize(id)
+    } else {
+      move(id, d.x, d.y)
+    }
+  }, [id, win?.isMaximized, maximize, move])
+
+  // Early return AFTER all hooks
   if (!win || !win.isOpen || win.isMinimized) return null
 
   const btnStyle = (type) => {
@@ -23,7 +59,7 @@ export default function Window({ id, title, icon, children }) {
       border: 'none', cursor: 'pointer', flexShrink: 0,
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       transition: 'all 0.15s',
-      boxShadow: isHovered ? `0 0 8px rgba(255,255,255,0.1)` : 'none',
+      boxShadow: isHovered ? '0 0 8px rgba(255,255,255,0.1)' : 'none',
       transform: isHovered ? 'scale(1.25)' : 'scale(1)',
     }
   }
@@ -41,52 +77,11 @@ export default function Window({ id, title, icon, children }) {
     return null
   }
 
-  // Double-click titlebar → toggle maximize
-  const onTitleDoubleClick = useCallback((e) => {
-    if (e.target.closest('button')) return
-    maximize(id)
-  }, [id, maximize])
-
-  // Titlebar right-click → window menu
-  const onTitleContextMenu = useCallback((e) => {
-    e.preventDefault()
-    e.stopPropagation()
-    setTitleMenu({ x: e.clientX, y: e.clientY })
-  }, [])
-
-  // When maximized, dragging titlebar should restore then drag
-  const onDragStart = useCallback((e, d) => {
-    if (win.isMaximized) {
-      // Restore window: position it so cursor is centered on titlebar
-      const newW = win._prevW || 700
-      const newH = win._prevH || 500
-      const newX = Math.max(0, d.x - newW / 2)
-      const newY = d.y
-      maximize(id) // toggles off maximized
-      // After maximize toggles off, set position
-      setTimeout(() => {
-        move(id, newX, newY)
-        resize(id, newW, newH, newX, newY)
-      }, 0)
-    }
-    dragStartRef.current = { x: d.x, y: d.y }
-  }, [win, id, maximize, move, resize])
-
-  // Snap to top edge → maximize
-  const onDragStop = useCallback((e, d) => {
-    if (d.y <= 2 && !win.isMaximized) {
-      maximize(id)
-    } else {
-      move(id, d.x, d.y)
-    }
-  }, [id, win.isMaximized, maximize, move])
-
-  // Window menu items
   const menuItems = [
-    { label: '최대화/복원', action: () => maximize(id) },
-    { label: '최소화', action: () => minimize(id) },
+    { label: win.isMaximized ? '↙ 복원' : '↗ 최대화', action: () => maximize(id) },
+    { label: '— 최소화', action: () => minimize(id) },
     { type: 'divider' },
-    { label: '닫기', action: () => close(id), color: '#ff5f57' },
+    { label: '✕ 닫기', action: () => close(id), color: '#ff5f57' },
   ]
 
   return (
@@ -135,43 +130,25 @@ export default function Window({ id, title, icon, children }) {
               borderBottom: '1px solid rgba(255,255,255,0.04)',
               display: 'flex', alignItems: 'center',
               padding: '0 12px', gap: 10,
-              cursor: win.isMaximized ? 'default' : 'default',
               userSelect: 'none',
             }}
           >
-            {/* Controls */}
             <div style={{ display: 'flex', gap: 7, alignItems: 'center' }}>
               {['close', 'min', 'max'].map((type) => (
-                <button
-                  key={type}
-                  style={btnStyle(type)}
+                <button key={type} style={btnStyle(type)}
                   onMouseEnter={() => setBtnHover(type)}
                   onMouseLeave={() => setBtnHover(null)}
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    if (type === 'close') close(id)
-                    if (type === 'min') minimize(id)
-                    if (type === 'max') maximize(id)
-                  }}
-                >
-                  {btnIcon(type)}
-                </button>
+                  onClick={(e) => { e.stopPropagation(); if (type === 'close') close(id); if (type === 'min') minimize(id); if (type === 'max') maximize(id) }}
+                >{btnIcon(type)}</button>
               ))}
             </div>
-
-            {/* Title centered */}
             <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
               <span style={{ fontSize: 13 }}>{icon}</span>
-              <span style={{ fontSize: 12.5, color: isActive ? 'var(--text-primary)' : 'var(--text-muted)', fontWeight: 500, opacity: isActive ? 1 : 0.7 }}>
-                {title}
-              </span>
+              <span style={{ fontSize: 12.5, color: isActive ? 'var(--text-primary)' : 'var(--text-muted)', fontWeight: 500, opacity: isActive ? 1 : 0.7 }}>{title}</span>
             </div>
-
-            {/* Right spacer */}
             <div style={{ width: 52 }} />
           </div>
 
-          {/* Content */}
           <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
             {children}
           </div>
