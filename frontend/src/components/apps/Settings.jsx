@@ -200,7 +200,9 @@ export default function SettingsApp() {
       <div style={s.section}>
         <div style={s.sectionTitle}>서비스 연결</div>
         {config && [
-          { key: 'ANTHROPIC_API_KEY', label: 'Anthropic API Key', type: 'password', placeholder: 'sk-ant-...' },
+          { key: 'ANTHROPIC_API_KEY', label: 'Anthropic API Key (Claude)', type: 'password', placeholder: 'sk-ant-...' },
+          { key: 'GEMINI_API_KEY', label: 'Google Gemini API Key', type: 'password', placeholder: 'AIza...' },
+          { key: 'OPENAI_API_KEY', label: 'OpenAI API Key (GPT/Codex)', type: 'password', placeholder: 'sk-...' },
           { key: 'VSCODE_TUNNEL_URL', label: 'VS Code Tunnel URL', placeholder: 'https://vscode.dev/tunnel/...' },
           { key: 'KASM_URL', label: 'KasmVNC URL', placeholder: 'http://localhost:6901' },
           { key: 'PROJECTS_BASE', label: '프로젝트 기본 경로', placeholder: '/home/user/projects' },

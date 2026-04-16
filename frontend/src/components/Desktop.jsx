@@ -27,7 +27,7 @@ import ContactApp from './apps/Contact'
 const APPS = [
   { id: 'terminal', title: 'Terminal', icon: '⌨', label: 'Terminal', gradient: 'linear-gradient(135deg, #0d1117, #161b22)', component: TerminalApp },
   { id: 'vscode', title: 'VS Code', icon: '◈', label: 'VS Code', gradient: 'linear-gradient(135deg, #007acc, #005b9a)', component: VSCodeApp },
-  { id: 'claude', title: 'Claude', icon: '✦', label: 'Claude', gradient: 'linear-gradient(135deg, #c47f6b, #8b4513)', component: ClaudeApp },
+  { id: 'claude', title: 'AI Chat', icon: '✦', label: 'AI Chat', gradient: 'linear-gradient(135deg, #c47f6b, #8b4513)', component: ClaudeApp },
   { id: 'claude-code', title: 'Claude Code', icon: '🤖', label: 'Claude Code', gradient: 'linear-gradient(135deg, #d97706, #92400e)', component: ClaudeCodeApp },
   { id: 'monitor', title: '시스템 모니터', icon: '📊', label: 'Monitor', gradient: 'linear-gradient(135deg, #1a3a5c, #0d2137)', component: SystemMonitor },
   { id: 'llm-dashboard', title: 'LLM 대시보드', icon: '🧠', label: 'LLM UI', gradient: 'linear-gradient(135deg, #7c3aed, #4c1d95)', component: LLMDashboardApp },
