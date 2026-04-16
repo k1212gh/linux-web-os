@@ -5,7 +5,7 @@ const PINNED = ['terminal', 'claude-code', 'profile', 'projects', 'blog', 'setti
 const MAX_SCALE = 1.35
 const MAGNIFY_RANGE = 140 // px
 
-export default function Taskbar({ apps }) {
+export default function Taskbar({ apps, onStartClick, startMenuOpen }) {
   const { windows, open, focus, minimize } = useWindowStore()
   const [time, setTime] = useState('')
   const [date, setDate] = useState('')
@@ -62,6 +62,28 @@ export default function Taskbar({ apps }) {
       justifyContent: 'center', zIndex: 9999, userSelect: 'none',
       padding: '0 12px 6px',
     }}>
+      {/* Start button — left of dock */}
+      <button
+        onClick={onStartClick}
+        style={{
+          width: 40, height: 40, borderRadius: 12, marginRight: 6,
+          background: startMenuOpen ? 'rgba(59,130,246,0.2)' : 'var(--bg-taskbar)',
+          backdropFilter: 'blur(16px)',
+          border: startMenuOpen ? '1px solid rgba(59,130,246,0.3)' : '1px solid var(--border)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          cursor: 'pointer', transition: 'all 0.15s',
+          boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
+        }}
+        title="시작 메뉴 (Win 키)"
+      >
+        <svg width="18" height="18" viewBox="0 0 16 16" fill="none">
+          <rect x="1" y="1" width="6" height="6" rx="1.5" fill="#ff6b6b" />
+          <rect x="9" y="1" width="6" height="6" rx="1.5" fill="#51cf66" />
+          <rect x="1" y="9" width="6" height="6" rx="1.5" fill="#339af0" />
+          <rect x="9" y="9" width="6" height="6" rx="1.5" fill="#fcc419" />
+        </svg>
+      </button>
+
       {/* Center dock */}
       <div
         ref={dockRef}

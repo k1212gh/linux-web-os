@@ -35,9 +35,9 @@ const APPS = [
   { id: 'git', title: 'Git 대시보드', icon: '🔀', label: 'Git', gradient: 'linear-gradient(135deg, #f97316, #c2410c)', component: GitDashboardApp },
   { id: 'cicd', title: 'CI/CD', icon: '🔨', label: 'CI/CD', gradient: 'linear-gradient(135deg, #14b8a6, #0f766e)', component: CICDApp },
   { id: 'filemanager', title: '파일 관리자', icon: '📂', label: 'Files', gradient: 'linear-gradient(135deg, #eab308, #a16207)', component: FileManagerApp },
+  { id: 'harness', title: '하네스', icon: '🔧', label: 'Harness', gradient: 'linear-gradient(135deg, #a855f7, #7e22ce)', component: HarnessManagerApp },
   { id: 'memo', title: '메모장', icon: '📒', label: 'Memo', gradient: 'linear-gradient(135deg, #fbbf24, #d97706)', component: MemoApp },
   { id: 'calculator', title: '계산기', icon: '🧮', label: 'Calc', gradient: 'linear-gradient(135deg, #6b7280, #374151)', component: CalculatorApp },
-  { id: 'harness', title: '하네스', icon: '🔧', label: 'Harness', gradient: 'linear-gradient(135deg, #a855f7, #7e22ce)', component: HarnessManagerApp },
   { id: 'settings', title: '설정', icon: '⚙', label: 'Settings', gradient: 'linear-gradient(135deg, #2d2d2d, #1a1a1a)', component: SettingsApp },
   { id: 'profile', title: '프로필', icon: '👤', label: 'Profile', gradient: 'linear-gradient(135deg, #3b82f6, #1d4ed8)', component: ProfileApp },
   { id: 'resume', title: '이력서', icon: '📄', label: 'Resume', gradient: 'linear-gradient(135deg, #22c55e, #15803d)', component: ResumeApp },
@@ -47,29 +47,16 @@ const APPS = [
   { id: 'contact', title: '연락처', icon: '✉', label: 'Contact', gradient: 'linear-gradient(135deg, #ef4444, #b91c1c)', component: ContactApp },
 ]
 
-/* ─── Snap Preview Overlay ─── */
+/* ─── Snap Preview ─── */
 function SnapPreview() {
   const snapPreview = useWindowStore((s) => s.snapPreview)
   if (!snapPreview) return null
-
-  const positions = {
-    left:  { left: 4, top: 4, width: 'calc(50% - 6px)', height: 'calc(100vh - var(--taskbar-h) - 8px)' },
-    right: { right: 4, top: 4, width: 'calc(50% - 6px)', height: 'calc(100vh - var(--taskbar-h) - 8px)' },
-    top:   { left: 4, top: 4, width: 'calc(100% - 8px)', height: 'calc(100vh - var(--taskbar-h) - 8px)' },
+  const pos = {
+    left:  { left: 4, top: 4, width: 'calc(50% - 6px)', height: 'calc(100vh - 64px)' },
+    right: { right: 4, top: 4, width: 'calc(50% - 6px)', height: 'calc(100vh - 64px)' },
+    top:   { left: 4, top: 4, width: 'calc(100% - 8px)', height: 'calc(100vh - 64px)' },
   }
-
-  return (
-    <div style={{
-      position: 'fixed', ...positions[snapPreview],
-      background: 'rgba(59,130,246,0.1)',
-      border: '2px solid rgba(59,130,246,0.3)',
-      borderRadius: 12,
-      zIndex: 5,
-      pointerEvents: 'none',
-      animation: 'snapPreviewPulse 1.5s ease infinite',
-      backdropFilter: 'blur(4px)',
-    }} />
-  )
+  return <div style={{ position: 'fixed', ...pos[snapPreview], background: 'rgba(59,130,246,0.1)', border: '2px solid rgba(59,130,246,0.3)', borderRadius: 12, zIndex: 5, pointerEvents: 'none', animation: 'snapPreviewPulse 1.5s ease infinite' }} />
 }
 
 /* ─── Boot Screen ─── */
@@ -77,7 +64,6 @@ function BootScreen({ onDone }) {
   const [progress, setProgress] = useState(0)
   const [msg, setMsg] = useState('')
   const [visible, setVisible] = useState(true)
-
   useEffect(() => {
     const last = localStorage.getItem('agentos-boot')
     if (last && Date.now() - parseInt(last) < 3600000) { setVisible(false); onDone(); return }
@@ -90,10 +76,9 @@ function BootScreen({ onDone }) {
     }, 450)
     return () => clearInterval(iv)
   }, [onDone])
-
   if (!visible) return null
   return (
-    <div style={{ position: 'fixed', inset: 0, background: '#07090f', zIndex: 99999, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', transition: 'opacity 0.5s' }}>
+    <div style={{ position: 'fixed', inset: 0, background: '#07090f', zIndex: 99999, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
       <div style={{ display: 'flex', gap: 6, marginBottom: 16 }}>
         {['#3b82f6', '#22c55e', '#f59e0b', '#ef4444'].map(c => <div key={c} style={{ width: 14, height: 14, borderRadius: 3, background: c }} />)}
       </div>
@@ -104,6 +89,89 @@ function BootScreen({ onDone }) {
       </div>
       <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)', fontFamily: 'var(--font-mono)' }}>{msg}</div>
     </div>
+  )
+}
+
+/* ─── Start Menu (Win key) ─── */
+function StartMenu({ onClose, apps }) {
+  const { open } = useWindowStore()
+  const [search, setSearch] = useState('')
+
+  const filtered = search
+    ? apps.filter(a => a.title.toLowerCase().includes(search.toLowerCase()) || a.label.toLowerCase().includes(search.toLowerCase()))
+    : apps
+
+  return (
+    <>
+      <div style={{ position: 'fixed', inset: 0, zIndex: 99996 }} onClick={onClose} />
+      <div style={{
+        position: 'fixed', bottom: 62, left: '50%', transform: 'translateX(-50%)',
+        width: 420, maxHeight: 500,
+        background: 'rgba(14,18,28,0.97)', backdropFilter: 'blur(24px)',
+        border: '1px solid var(--border)', borderRadius: 14,
+        boxShadow: '0 16px 64px rgba(0,0,0,0.6)',
+        zIndex: 99997, overflow: 'hidden',
+        animation: 'fadeIn 0.12s ease',
+      }}>
+        {/* Search */}
+        <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--border)' }}>
+          <input
+            autoFocus
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="앱 검색..."
+            style={{
+              width: '100%', padding: '10px 14px', borderRadius: 10,
+              background: 'rgba(255,255,255,0.06)', border: '1px solid var(--border)',
+              color: 'var(--text-primary)', fontSize: 14, outline: 'none',
+              fontFamily: 'var(--font-ui)',
+            }}
+            onKeyDown={e => {
+              if (e.key === 'Escape') onClose()
+              if (e.key === 'Enter' && filtered.length > 0) {
+                open(filtered[0].id)
+                onClose()
+              }
+            }}
+          />
+        </div>
+
+        {/* App grid */}
+        <div style={{ padding: 12, maxHeight: 380, overflowY: 'auto', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 4 }}>
+          {filtered.map(app => (
+            <button
+              key={app.id}
+              onClick={() => { open(app.id); onClose() }}
+              style={{
+                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
+                padding: '12px 4px', borderRadius: 10, border: 'none', cursor: 'pointer',
+                background: 'transparent', color: 'var(--text-primary)',
+                transition: 'background 0.1s',
+              }}
+              onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.06)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+            >
+              <div style={{
+                width: 40, height: 40, borderRadius: 10, background: app.gradient,
+                display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18,
+                boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+              }}>
+                {app.icon}
+              </div>
+              <span style={{ fontSize: 10.5, color: 'var(--text-secondary)', textAlign: 'center', lineHeight: 1.2 }}>
+                {app.label}
+              </span>
+            </button>
+          ))}
+        </div>
+
+        {/* Footer */}
+        <div style={{ padding: '8px 16px', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>AgentOS</span>
+          <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>Win 키로 열기/닫기</span>
+        </div>
+      </div>
+    </>
   )
 }
 
@@ -128,18 +196,21 @@ function ContextMenu({ x, y, onClose }) {
     { label: '🔄 아이콘 위치 초기화', action: () => { localStorage.removeItem('agentos-icon-positions'); location.reload() } },
     { label: '🗑 모든 창 닫기', action: () => Object.keys(windows).forEach(id => { if (windows[id].isOpen) useWindowStore.getState().close(id) }) },
   ]
-  // Adjust position to keep menu in viewport
-  const menuStyle = { position: 'fixed', left: Math.min(x, window.innerWidth - 220), top: Math.min(y, window.innerHeight - 300), zIndex: 99999, background: 'rgba(14,18,28,0.96)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, padding: '6px 0', minWidth: 200, boxShadow: '0 12px 40px rgba(0,0,0,0.6)', animation: 'fadeIn 0.1s ease' }
-
   return (
     <>
       <div style={{ position: 'fixed', inset: 0, zIndex: 99998 }} onClick={onClose} onContextMenu={e => { e.preventDefault(); onClose() }} />
-      <div style={menuStyle}>
+      <div style={{
+        position: 'fixed', left: Math.min(x, window.innerWidth - 220), top: Math.min(y, window.innerHeight - 400),
+        zIndex: 99999, background: 'rgba(14,18,28,0.96)', backdropFilter: 'blur(20px)',
+        border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10,
+        padding: '6px 0', minWidth: 200, boxShadow: '0 12px 40px rgba(0,0,0,0.6)',
+        animation: 'fadeIn 0.1s ease',
+      }}>
         {items.map((item, i) => {
           if (item.type === 'divider') return <div key={i} style={{ height: 1, background: 'rgba(255,255,255,0.06)', margin: '4px 0' }} />
           return (
             <div key={i} onClick={() => { item.action(); onClose() }}
-              style={{ padding: '7px 14px', fontSize: 12.5, color: 'var(--text-primary)', cursor: 'pointer', transition: 'background 0.1s', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+              style={{ padding: '7px 14px', fontSize: 12.5, color: 'var(--text-primary)', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
               onMouseEnter={e => e.currentTarget.style.background = 'rgba(59,130,246,0.15)'}
               onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
               <span>{item.label}</span>
@@ -157,29 +228,37 @@ export default function Desktop() {
   const { registerApp, close, minimize, focus } = useWindowStore()
   const [booted, setBooted] = useState(false)
   const [ctxMenu, setCtxMenu] = useState(null)
+  const [startMenu, setStartMenu] = useState(false)
 
   useEffect(() => { APPS.forEach(app => registerApp(app)) }, [])
 
   // Keyboard shortcuts
-  // Note: Alt+Tab / Alt+F4 are captured by the OS/browser and never reach JS.
-  // We use Ctrl-based alternatives that work in the browser.
   useEffect(() => {
     const handler = (e) => {
       const tag = e.target.tagName
       const isInput = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT'
 
-      // F11 — fullscreen toggle (works even inside browser)
+      // Win key (Meta) — toggle start menu
+      if (e.key === 'Meta') {
+        e.preventDefault()
+        setStartMenu(prev => !prev)
+        return
+      }
+
+      // F11 — fullscreen
       if (e.key === 'F11') {
         e.preventDefault()
         document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen()
       }
-      // Ctrl+W — close active window (override browser tab close)
+
+      // Ctrl+W — close active window
       if (e.ctrlKey && e.key === 'w' && !isInput) {
         e.preventDefault()
         const a = useWindowStore.getState().activeId
         if (a) close(a)
       }
-      // Ctrl+` (backtick) — cycle windows (like Alt+Tab)
+
+      // Ctrl+` — cycle windows
       if (e.ctrlKey && e.key === '`') {
         e.preventDefault()
         const wins = Object.values(useWindowStore.getState().windows).filter(w => w.isOpen)
@@ -188,16 +267,19 @@ export default function Desktop() {
         const idx = ids.indexOf(useWindowStore.getState().activeId)
         focus(ids[(idx + 1) % ids.length])
       }
-      // Ctrl+D — show desktop (minimize all)
+
+      // Ctrl+D — show desktop
       if (e.ctrlKey && (e.key === 'd' || e.key === 'D') && !isInput) {
         e.preventDefault()
         Object.values(useWindowStore.getState().windows).forEach(w => {
           if (w.isOpen && !w.isMinimized) minimize(w.id)
         })
       }
-      // Escape — close context menu / deselect
+
+      // Escape — close menus
       if (e.key === 'Escape') {
         setCtxMenu(null)
+        setStartMenu(false)
       }
     }
     window.addEventListener('keydown', handler)
@@ -216,33 +298,32 @@ export default function Desktop() {
     <>
       <BootScreen onDone={onBootDone} />
       {booted && (
-        <div style={{ position: 'relative', width: '100vw', height: '100vh', overflow: 'hidden' }} onContextMenu={onContextMenu}>
+        <div style={{ position: 'relative', width: '100vw', height: '100vh', overflow: 'hidden', background: 'var(--bg-desktop)' }} onContextMenu={onContextMenu}>
           {/* Animated background */}
           <div style={{
             position: 'absolute', inset: 0,
-            background: 'linear-gradient(-45deg, #0a0e1a, #12102e, #0a1e3a, #0d1a14, #0a0e1a)',
+            background: 'linear-gradient(-45deg, var(--bg-desktop), #12102e, #0a1e3a, #0d1a14)',
             backgroundSize: '500% 500%',
             animation: 'bgShift 40s ease infinite',
-          }} />
-          {/* Ambient overlay */}
-          <div style={{
-            position: 'absolute', inset: 0, pointerEvents: 'none',
-            background: 'radial-gradient(ellipse 60% 40% at 15% 85%, rgba(59,130,246,0.05) 0%, transparent 60%), radial-gradient(ellipse 40% 50% at 85% 15%, rgba(139,92,246,0.04) 0%, transparent 55%)',
           }} />
 
           {/* Desktop icons */}
           {APPS.map((app, i) => <AppIcon key={app.id} id={app.id} label={app.label} icon={app.icon} gradient={app.gradient} index={i} />)}
 
-          {/* Snap preview overlay */}
+          {/* Snap preview */}
           <SnapPreview />
 
-          {/* Windows */}
-          <div style={{ position: 'absolute', inset: 0, bottom: 'var(--taskbar-h)' }}>
+          {/* Windows — leave space for taskbar */}
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 56 }}>
             {APPS.map(app => <Window key={app.id} id={app.id} title={app.title} icon={app.icon}><app.component /></Window>)}
           </div>
 
+          {/* Menus */}
           {ctxMenu && <ContextMenu x={ctxMenu.x} y={ctxMenu.y} onClose={() => setCtxMenu(null)} />}
-          <Taskbar apps={APPS} />
+          {startMenu && <StartMenu onClose={() => setStartMenu(false)} apps={APPS} />}
+
+          {/* Taskbar */}
+          <Taskbar apps={APPS} onStartClick={() => setStartMenu(prev => !prev)} startMenuOpen={startMenu} />
         </div>
       )}
     </>
