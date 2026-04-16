@@ -198,27 +198,17 @@ export default function Desktop() {
         `,
       }} />
 
-      {/* Desktop icons — grid */}
-      <div style={{
-        position: 'absolute',
-        top: 16,
-        left: 16,
-        display: 'grid',
-        gridTemplateColumns: 'repeat(2, 80px)',
-        gridAutoRows: 'auto',
-        gap: 4,
-        zIndex: 1,
-      }}>
-        {APPS.map((app) => (
-          <AppIcon
-            key={app.id}
-            id={app.id}
-            label={app.label}
-            icon={app.icon}
-            gradient={app.gradient}
-          />
-        ))}
-      </div>
+      {/* Desktop icons — freely draggable */}
+      {APPS.map((app, i) => (
+        <AppIcon
+          key={app.id}
+          id={app.id}
+          label={app.label}
+          icon={app.icon}
+          gradient={app.gradient}
+          index={i}
+        />
+      ))}
 
       {/* Windows layer */}
       <div style={{ position: 'absolute', inset: 0, bottom: 'var(--taskbar-h)' }}>

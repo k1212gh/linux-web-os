@@ -64,9 +64,7 @@ input, textarea {
   outline: none;
 }
 
-.win-btn-close  { background: #ff5f57; }
-.win-btn-min    { background: #febc2e; }
-.win-btn-max    { background: #28c840; }
+/* Window button colors moved to inline styles in Window.jsx */
 
 @keyframes windowOpen {
   from { opacity: 0; transform: scale(0.95) translateY(8px); }

@@ -1,11 +1,15 @@
 import { useState, useEffect } from 'react'
 import { useWindowStore } from '../store/windowStore'
 
+// Pinned apps that always show in dock
+const PINNED = ['terminal', 'claude-code', 'profile', 'projects', 'blog', 'settings']
+
 export default function Taskbar({ apps }) {
   const { windows, open, focus, minimize } = useWindowStore()
   const [time, setTime] = useState('')
   const [date, setDate] = useState('')
   const [sysInfo, setSysInfo] = useState(null)
+  const [hoveredId, setHoveredId] = useState(null)
 
   useEffect(() => {
     const tick = () => {
@@ -20,21 +24,17 @@ export default function Taskbar({ apps }) {
 
   useEffect(() => {
     const fetchInfo = () =>
-      fetch('/api/system/quick')
-        .then((r) => r.json())
-        .then(setSysInfo)
-        .catch(() => {})
+      fetch('/api/system/quick').then(r => r.json()).then(setSysInfo).catch(() => {})
     fetchInfo()
     const id = setInterval(fetchInfo, 5000)
     return () => clearInterval(id)
   }, [])
 
-  const openWins = Object.values(windows).filter((w) => w.isOpen)
-
-  const handleTaskbarClick = (id) => {
+  const handleClick = (id) => {
     const win = windows[id]
-    if (!win) return
-    if (win.isMinimized) {
+    if (!win?.isOpen) {
+      open(id)
+    } else if (win.isMinimized) {
       focus(id)
     } else if (useWindowStore.getState().activeId === id) {
       minimize(id)
@@ -43,86 +43,121 @@ export default function Taskbar({ apps }) {
     }
   }
 
+  // Combine pinned + open (non-pinned)
+  const openIds = Object.values(windows).filter(w => w.isOpen && !PINNED.includes(w.id)).map(w => w.id)
+  const allDockIds = [...PINNED, ...openIds]
+
   return (
     <div style={{
-      position: 'absolute',
-      bottom: 0, left: 0, right: 0,
-      height: 'var(--taskbar-h)',
-      background: 'var(--bg-taskbar)',
-      backdropFilter: 'blur(20px)',
-      borderTop: '1px solid var(--border)',
-      display: 'flex',
-      alignItems: 'center',
+      position: 'absolute', bottom: 0, left: 0, right: 0,
+      height: 'var(--taskbar-h)', display: 'flex', alignItems: 'center',
+      justifyContent: 'center', zIndex: 9999, userSelect: 'none',
       padding: '0 12px',
-      gap: 4,
-      zIndex: 9999,
-      userSelect: 'none',
     }}>
-      {/* Start button */}
-      <button style={{
-        width: 36, height: 32, borderRadius: 8,
-        background: 'rgba(255,255,255,0.08)',
-        border: '1px solid var(--border)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: 15, cursor: 'pointer', color: 'white', flexShrink: 0,
-        transition: 'background 0.15s',
-      }}
-        onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.14)'}
-        onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
-      >⊞</button>
+      {/* Center dock */}
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: 3,
+        background: 'rgba(6,10,18,0.85)',
+        backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)',
+        border: '1px solid rgba(255,255,255,0.08)',
+        borderRadius: 14, padding: '5px 8px',
+        boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+      }}>
+        {allDockIds.map((appId, i) => {
+          const app = apps.find(a => a.id === appId)
+          if (!app) return null
+          const win = windows[appId]
+          const isOpen = win?.isOpen && !win?.isMinimized
+          const isActive = useWindowStore.getState().activeId === appId
+          const isHovered = hoveredId === appId
+          const isPinned = PINNED.includes(appId)
 
-      <div style={{ width: 1, height: 22, background: 'var(--border)', margin: '0 4px', flexShrink: 0 }} />
-
-      {/* Running apps */}
-      <div style={{ display: 'flex', gap: 3, flex: 1, overflow: 'hidden' }}>
-        {openWins.map((win) => {
-          const isActive = useWindowStore.getState().activeId === win.id
           return (
-            <button
-              key={win.id}
-              onClick={() => handleTaskbarClick(win.id)}
-              style={{
-                height: 32, padding: '0 12px',
-                borderRadius: 7,
-                background: isActive ? 'rgba(59,130,246,0.18)' : 'rgba(255,255,255,0.07)',
-                border: isActive ? '1px solid rgba(59,130,246,0.35)' : '1px solid var(--border)',
-                color: isActive ? 'white' : 'var(--text-secondary)',
-                fontSize: 12, cursor: 'pointer',
-                display: 'flex', alignItems: 'center', gap: 6,
-                whiteSpace: 'nowrap', maxWidth: 140, overflow: 'hidden',
-                transition: 'all 0.15s',
-                position: 'relative',
-              }}
-            >
-              <span style={{ fontSize: 13 }}>{win.icon}</span>
-              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{win.title}</span>
-              {win.isMinimized && (
-                <div style={{ width: 3, height: 3, borderRadius: '50%',
-                  background: 'var(--accent)', position: 'absolute', bottom: 4, left: '50%', transform: 'translateX(-50%)' }} />
+            <div key={appId} style={{ position: 'relative' }}>
+              {/* Separator before non-pinned apps */}
+              {i === PINNED.length && openIds.length > 0 && (
+                <div style={{
+                  position: 'absolute', left: -3, top: 6, bottom: 6,
+                  width: 1, background: 'rgba(255,255,255,0.1)',
+                }} />
               )}
-            </button>
+              <button
+                onClick={() => handleClick(appId)}
+                onMouseEnter={() => setHoveredId(appId)}
+                onMouseLeave={() => setHoveredId(null)}
+                style={{
+                  width: 38, height: 38, borderRadius: 10,
+                  background: app.gradient,
+                  border: isActive ? '1px solid rgba(255,255,255,0.2)' : '1px solid transparent',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 18, cursor: 'pointer',
+                  transform: isHovered ? 'scale(1.18) translateY(-4px)' : 'scale(1)',
+                  transition: 'transform 0.15s cubic-bezier(0.34,1.56,0.64,1), border 0.15s',
+                  boxShadow: isHovered
+                    ? '0 8px 20px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.1)'
+                    : '0 2px 8px rgba(0,0,0,0.3)',
+                  position: 'relative',
+                }}
+                title={app.title}
+              >
+                {app.icon}
+              </button>
+
+              {/* Running indicator dot */}
+              {win?.isOpen && (
+                <div style={{
+                  position: 'absolute', bottom: -3, left: '50%',
+                  transform: 'translateX(-50%)',
+                  width: isActive ? 6 : 4, height: 3,
+                  borderRadius: 2,
+                  background: isActive ? '#fff' : 'rgba(255,255,255,0.5)',
+                  transition: 'all 0.15s',
+                }} />
+              )}
+
+              {/* Hover tooltip */}
+              {isHovered && (
+                <div style={{
+                  position: 'absolute', bottom: 46, left: '50%',
+                  transform: 'translateX(-50%)',
+                  padding: '4px 10px', borderRadius: 6,
+                  background: 'rgba(20,24,36,0.95)',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  color: 'var(--text-primary)',
+                  fontSize: 11, fontWeight: 500, whiteSpace: 'nowrap',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+                  animation: 'fadeIn 0.1s ease',
+                  pointerEvents: 'none',
+                }}>
+                  {app.title}
+                </div>
+              )}
+            </div>
           )
         })}
       </div>
 
-      {/* System tray */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0, marginLeft: 8 }}>
+      {/* System tray — right side */}
+      <div style={{
+        position: 'absolute', right: 12,
+        display: 'flex', alignItems: 'center', gap: 8,
+        background: 'rgba(6,10,18,0.75)',
+        backdropFilter: 'blur(16px)',
+        border: '1px solid rgba(255,255,255,0.06)',
+        borderRadius: 10, padding: '5px 12px',
+      }}>
         {sysInfo && (
-          <div style={{ display: 'flex', gap: 8, fontSize: 11, color: 'var(--text-muted)' }}>
-            <span title="GPU" style={{ color: '#58a6ff' }}>
-              GPU {Math.round(sysInfo.gpu_util ?? 0)}%
-            </span>
-            <span title="VRAM" style={{ color: '#bc8cff' }}>
-              {(sysInfo.vram_used ?? 0).toFixed(1)}GB
-            </span>
+          <div style={{ display: 'flex', gap: 6, fontSize: 10, color: 'var(--text-muted)' }}>
+            <span style={{ color: '#58a6ff' }}>GPU {Math.round(sysInfo.gpu_util ?? 0)}%</span>
+            <span style={{ color: '#bc8cff' }}>{(sysInfo.vram_used ?? 0).toFixed(1)}G</span>
           </div>
         )}
-        <div style={{ width: 1, height: 18, background: 'var(--border)' }} />
-        <div style={{ textAlign: 'right', lineHeight: 1.35, cursor: 'default' }}>
-          <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-primary)', fontVariantNumeric: 'tabular-nums' }}>
+        {sysInfo && <div style={{ width: 1, height: 14, background: 'rgba(255,255,255,0.08)' }} />}
+        <div style={{ textAlign: 'right', lineHeight: 1.3, cursor: 'default' }}>
+          <div style={{ fontSize: 11.5, fontWeight: 500, color: 'var(--text-primary)', fontVariantNumeric: 'tabular-nums' }}>
             {time}
           </div>
-          <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>{date}</div>
+          <div style={{ fontSize: 9.5, color: 'var(--text-muted)' }}>{date}</div>
         </div>
       </div>
     </div>
