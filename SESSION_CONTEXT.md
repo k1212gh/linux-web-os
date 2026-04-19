@@ -1,194 +1,239 @@
-# 세션 컨텍스트 — 2026-04-17 (최종 업데이트)
+# AgentOS 세션 컨텍스트 — 최종 (2026-04-19)
 
-> 다른 기기에서 이어서 작업할 때 이 파일을 먼저 읽으세요.
+> **리눅스 서버에서 이어서 작업할 때 이 파일을 Claude Code에 전달하세요.**
 
 ---
 
 ## 프로젝트 개요
 
-**linux-web-os** (https://github.com/k1212gh/linux-web-os) 를 포크하여 **개인 포트폴리오 + 클라우드 워크스테이션**으로 고도화하는 프로젝트.
+**AgentOS** — 브라우저 기반 Web OS 포트폴리오 + 클라우드 개발 워크스테이션
+- GitHub: https://github.com/k1212gh/linux-web-os
+- 브랜치: `feat/portfolio-apps` (main에서 분기, 30 커밋)
+- 68파일 변경, 8877줄 추가
 
 ## 누가
 
 - **김건희** (Kim Gunhui) — k1212gh@tukorea.ac.kr
 - 한국공학대학교 컴퓨터공학과 / SSAFY 14기 서울
-- 주요 프로젝트: Synaptic(노션 시맨틱 검색 SaaS), ALOE MCP Copilot, 딥페이크 탐지
+- GitHub: https://github.com/k1212gh
+- 블로그: https://k1212gh.tistory.com/
 
-## 오늘 한 일 (2026-04-16)
+---
 
-### 1단계: 바닐라 JS 프로토타입
-- CLI 기반 에이전틱 AI 보고서를 Web OS 인터페이스로 구현 (순수 HTML/CSS/JS)
-- 윈도우 매니저, 7개 앱, 3개 테마, Canvas 차트 등 완성
-- 위치: `test/` 폴더 (바닐라 JS 버전, 보존 중)
-
-### 2단계: 고도화 계획 수립
-- 포트폴리오 앱, 블로그, Claude Code 전용 앱 등 기능 확장 계획
-- React 전환 결정 (규모 확장성)
-- `test/react-app/` 폴더에 React(Vite+TS) 버전 시작했으나 **중단**
-
-### 3단계: linux-web-os 기반으로 전환 (현재)
-- 본인의 기존 레포 `k1212gh/linux-web-os`를 분석
-- 이미 구현된 6개 앱(Terminal, VS Code, Claude, Monitor, Kasm, Settings) 위에 포트폴리오 앱 추가
-- `feat/portfolio-apps` 브랜치에서 작업 중
-
-## 현재 브랜치 상태
-
-**브랜치**: `feat/portfolio-apps` (main에서 분기)
-
-### 추가된 파일 (Phase 0~5 완료)
+## 커밋 히스토리 (30개)
 
 ```
-ENHANCEMENT_PLAN.md          ← 전체 7-Phase 고도화 계획서
-TEST_PROMPT.md               ← 69개 항목 QA 테스트 프롬프트
-SESSION_CONTEXT.md           ← 이 파일
+1b0b5c5 feat: initial commit — Linux Web OS v1.0
+73e02b7 feat: initial commit - Linux Web OS v1.0
+1e6816d feat: add portfolio apps (6개: Profile, Resume, Projects, Blog, Timeline, Contact)
+6ec18fe docs: add session context
+78af333 fix: QA test failures (Window hook, project filter, contact contrast)
+541c016 feat: Phase 1-5 (Claude Code앱, Git, CI/CD, 파일매니저, 메모, 계산기)
+7205d53 docs: session context update
+1abf667 feat: Phase 6-7 (GitHub Actions, SEO, /blog skill)
+53de35d feat: UX overhaul (드래그 아이콘, Dock, 윈도우 리디자인, 설정)
+355cbf3 feat: 시스템 모니터 redesign (Windows 작업관리자 스타일 + LLM 탭)
+f16fa6e feat: OS features (부팅, 우클릭, 단축키, Ollama 연동, LLM 대시보드)
+73e6fe7 fix: keyboard shortcuts (Ctrl+W/`/D로 변경)
+60babf6 fix: Window Hook rules violation
+97f24ff fix: drag-to-restore maximized window
+8233e07 docs: improvement plan (6 sprints)
+2fc97f8 feat: Sprint 1 — 디자인/UX (닫기 애니메이션, 스냅, Dock magnification, 테마)
+7b7363c feat: Sprint 2 — 콘텐츠 (프로필/프로젝트/블로그/타임라인 보강)
+918dbe9 docs: README 완성
+1ca0aeb docs: session context update
+29dd0d6 docs: next session plan (harness + obsidian)
+0f524d1 feat: 하네스 시스템 (rules, hooks, skills, CLAUDE.md, HarnessManager앱)
+b84af77 feat: Obsidian 통합 (백엔드 라우터)
+56369b9 feat: WSL 백엔드 실행 확인 (포트 8001)
+f4d6db4 feat: 시작메뉴 (Win키) + 레이아웃 수정
+4c99435 fix: 버그 수정 + 모바일 CSS + 라이트 테마 보강
+3aada86 feat: 통합 AI Chat (Claude+Gemini+GPT+Ollama 한 앱에서)
+ca6d9af fix: 윈도우 위치 오버플로 + Win키 전체화면에서만
+b6b5d6d fix: 윈도우 off-screen + Claude CLI chat
+f8c96e2 feat: 3 OS 스타일 (Windows 11, macOS, GNOME 선택 가능)
+c815c36 fix: 윈도우 위치 저장 비활성화 (react-rnd 좌표 drift 문제)
+```
 
-frontend/src/data/
-  profile.js                 ← 프로필/이력서 데이터
-  projects.js                ← 프로젝트 5개 데이터
+---
 
-frontend/src/hooks/
-  useWebSocket.js            ← 재사용 WebSocket 훅
+## 현재 구현 상태
 
-frontend/src/components/apps/
-  ClaudeCode.jsx             ← Phase 1: Claude Code 전용 앱 (WS + 도구 승인 UI)
-  claude/ConversationView.jsx ← 대화 뷰 (메시지 + 도구 호출 렌더링)
-  GitDashboard.jsx           ← Phase 3: Git 브랜치/커밋/상태
-  CICD.jsx                   ← Phase 3: 빌드/테스트 파이프라인 + 로그 스트리밍
-  FileManager.jsx            ← Phase 3: 파일 탐색/미리보기/업로드
-  Memo.jsx                   ← Phase 5: 메모장 (localStorage)
-  Calculator.jsx             ← Phase 5: 계산기
+### 앱 21개
 
-backend/services/
-  claude_session.py          ← Claude 프로세스 관리 (PTY)
+| # | 앱 | 파일 | 백엔드 | 상태 |
+|---|-----|------|--------|------|
+| 1 | Terminal | Terminal.jsx | terminal.py (PTY) | ⚠️ WSL에서만 |
+| 2 | VS Code | VSCode.jsx | services.py (iframe) | ⚠️ Tunnel URL 필요 |
+| 3 | AI Chat | Claude.jsx | chat.py (4사 라우팅) | ✅ 멀티 프로바이더 |
+| 4 | Claude Code | ClaudeCode.jsx | claude.py (WS) | ⚠️ CLI 필요 |
+| 5 | 시스템 모니터 | SystemMonitor.jsx | system.py | ✅ 동작 확인 |
+| 6 | LLM 대시보드 | LLMDashboard.jsx | services.py | ⚠️ Open WebUI 필요 |
+| 7 | 원격 데스크톱 | Kasm.jsx | services.py | ⚠️ KasmVNC 필요 |
+| 8 | Git 대시보드 | GitDashboard.jsx | git.py | ⚠️ WSL에서만 |
+| 9 | CI/CD | CICD.jsx | cicd.py (WS) | ⚠️ WSL에서만 |
+| 10 | 파일 관리자 | FileManager.jsx | files.py | ⚠️ WSL에서만 |
+| 11 | 하네스 매니저 | HarnessManager.jsx | harness.py | ✅ 동작 |
+| 12 | 메모장 | Memo.jsx | localStorage | ✅ 동작 |
+| 13 | 계산기 | Calculator.jsx | 없음 | ✅ 동작 |
+| 14 | 설정 | Settings.jsx | config.py | ✅ 동작 |
+| 15 | 프로필 | Profile.jsx | 없음 | ✅ 동작 |
+| 16 | 이력서 | Resume.jsx | 없음 | ✅ 동작 |
+| 17 | 프로젝트 | Projects.jsx | 없음 | ✅ 동작 |
+| 18 | 블로그 | Blog.jsx | blog.py | ✅ 프론트 동작 |
+| 19 | 타임라인 | Timeline.jsx | 없음 | ✅ 동작 |
+| 20 | 연락처 | Contact.jsx | contact.py | ⚠️ mailto만 |
+| 21 | (Obsidian) | 앱 없음 | obsidian.py | ❌ 프론트 미구현 |
 
+### 백엔드 라우터 13개
+
+```
 backend/routers/
-  claude.py                  ← Claude Code REST + WebSocket
-  blog.py                    ← 블로그 CRUD (JSON 파일)
-  contact.py                 ← 방명록 CRUD
-  git.py                     ← Git CLI 래핑
-  cicd.py                    ← 파이프라인 실행 + WS 로그
-  files.py                   ← 파일 매니저 API (경로 보안)
-
-frontend/src/components/apps/
-  Profile.jsx                ← 프로필 카드 앱 (스킬바, 링크)
-  Resume.jsx                 ← 이력서 뷰어 (학력, 교육, 프로젝트, 스택)
-  Projects.jsx               ← 프로젝트 쇼케이스 (카드 그리드 + 필터 + 상세)
-  Blog.jsx                   ← 블로그 (포스트 리스트/리더 + 가이드 탭)
-  Timeline.jsx               ← 타임라인 (세로 연표, 펄스 애니메이션)
-  Contact.jsx                ← 연락처 (이메일/링크 + 메시지 폼)
+├── terminal.py    ← WebSocket PTY (bash)
+├── chat.py        ← Claude/Gemini/GPT/Ollama + Claude CLI
+├── claude.py      ← Claude Code 세션 관리 (WebSocket)
+├── system.py      ← GPU/CPU/RAM + LLM 모니터링
+├── config.py      ← .env.json 관리 (10개 허용 키)
+├── services.py    ← VS Code/Kasm/FileBrowser/LLM 대시보드 health check
+├── git.py         ← Git CLI 래핑 (repos/branches/log/status)
+├── cicd.py        ← 파이프라인 실행 + WebSocket 로그
+├── files.py       ← 파일 CRUD (경로 보안)
+├── harness.py     ← .claude/ 디렉토리 읽기
+├── blog.py        ← 블로그 CRUD (JSON 파일)
+├── contact.py     ← 방명록 CRUD
+└── obsidian.py    ← 옵시디언 볼트 탐색/동기화
 ```
 
-### 수정된 파일
+### 하네스 시스템
 
 ```
-frontend/src/components/Desktop.jsx  ← 새 앱 6개 import + APPS 배열에 등록
-frontend/src/store/windowStore.js    ← 새 앱 기본 윈도우 크기 추가
+.claude/
+├── settings.json         ← permissions (allow 18, deny 9, ask 7) + hooks 3개
+├── rules/
+│   ├── frontend.md       ← React 규칙 (Hook early return 등)
+│   ├── backend.md        ← FastAPI 패턴
+│   └── security.md       ← 보안 규칙
+├── hooks/
+│   ├── format-on-save.sh ← PostToolUse: prettier
+│   ├── block-dangerous.sh← PreToolUse: 위험 명령 차단
+│   └── verify-build.sh   ← Stop: 빌드 검증
+├── commands/
+│   ├── blog.md           ← /blog 스킬
+│   ├── review.md         ← /review 코드 리뷰
+│   ├── deploy.md         ← /deploy 배포
+│   ├── harness.md        ← /harness Phase별 실행
+│   └── test.md           ← /test 테스트
+└── CLAUDE.md             ← 프로젝트 헌법
 ```
 
-## 빌드 상태
+### OS 기능
 
-- ✅ `npx vite build` 에러 없이 성공
-- ✅ `npm run dev` (localhost:5173) 정상 실행 확인
-- ⚠️ 브라우저 실제 동작 테스트 **미완료** (TEST_PROMPT.md 참조)
+- 3개 OS 스타일 (Windows 11 / macOS / GNOME) — 설정에서 전환
+- 다크/라이트 테마
+- 부팅 시퀀스 (1시간 내 재방문 스킵)
+- 시작 메뉴 (Start 버튼 + 전체화면에서 Win키)
+- 우클릭 컨텍스트 메뉴 (단축키 힌트 포함)
+- 키보드: F11(전체화면), Ctrl+W(닫기), Ctrl+`(전환), Ctrl+D(바탕화면)
+- Dock magnification (코사인 거리 기반)
+- 윈도우 스냅 (좌/우/상단 + 프리뷰 오버레이)
+- 닫기 애니메이션 (scale+opacity fade)
+- 비활성 윈도우 dim
+- 배경 그래디언트 애니메이션
+- 드래그 가능한 데스크톱 아이콘 (위치 localStorage 저장)
 
-## 알려진 / 예상되는 문제
+---
 
-| # | 문제 | 심각도 |
-|---|------|--------|
-| 1 | 아이콘 12개가 세로 1열이라 화면 아래로 잘릴 수 있음 | Medium |
-| 2 | Blog의 HTML 콘텐츠(dangerouslySetInnerHTML)가 제대로 렌더링 안 될 수 있음 | High |
-| 3 | Timeline 좌우 교차 레이아웃이 작은 윈도우에서 잘릴 수 있음 | Medium |
-| 4 | 백엔드 없이 Taskbar의 시스템 트레이 fetch 에러 (무시 가능) | Low |
-| 5 | Contact의 input 글자색이 배경과 비슷해 안 보일 수 있음 | Medium |
+## 미구현 항목 (우선순위 순)
 
-## 다음 할 일 (우선순위 순)
+### 1순위 — 인프라 관리 통합 (다음 작업)
+- [ ] Jenkins/GitHub Actions 대시보드 (하이브리드: iframe + 상태 API)
+- [ ] Docker/Portainer 관리 (컨테이너 목록/시작/정지/로그)
+- [ ] Grafana/Prometheus 모니터링 iframe
+- [ ] 통합 인프라 패널 앱
 
-### 즉시 (Phase 0 마무리)
-1. **TEST_PROMPT.md로 브라우저 테스트** → 실제 문제 파악
-2. 발견된 문제 수정
-3. 수정 후 다시 빌드/테스트
+### 2순위 — 자동화
+- [ ] 블로그 에디터 완성 (마크다운 + 미리보기)
+- [ ] /blog 스킬 실동작 테스트
+- [ ] Obsidian 뷰어 앱 (프론트엔드)
+- [ ] Blog ↔ Obsidian 양방향 동기화
 
-### 그 다음 (Phase 1 — 핵심)
-4. **Claude Code 전용 앱** 구현 (ENHANCEMENT_PLAN.md Phase 1 참조)
-   - 백엔드: `backend/routers/claude.py` + `backend/services/claude_session.py`
-   - 프론트: `ClaudeCode.jsx` + `ConversationView.jsx` + `ToolCallBlock.jsx` + `DiffViewer.jsx`
-   - WebSocket으로 `claude` 프로세스에 연결
-   - 도구 호출 승인/거부 UI
+### 3순위 — 배포
+- [ ] main 머지 + GitHub Pages (정적 포트폴리오)
+- [ ] Tailscale 프로덕션 배포
+- [ ] PWA manifest
+- [ ] OG 이미지
 
-### 이후
-5. Phase 2: 포트폴리오 앱 폴리시 (블로그 에디터, 방명록 백엔드)
-6. Phase 3: 개발 도구 (Git 대시보드, CI/CD, 파일 매니저)
-7. Phase 4~7: OS 강화, 유틸리티, 배포
+### 4순위 — 추가 앱
+- [ ] 마크다운 에디터 (독립 앱)
+- [ ] 알림 센터 (토스트 + 패널)
+- [ ] Docker 매니저 (프론트)
+- [ ] 웹 브라우저 (iframe)
 
-## 개발 환경
+### 5순위 — 보안 강화 (다중 사용자 시)
+- [ ] CORS 특정 도메인 제한
+- [ ] CI/CD shell injection 방어
+- [ ] XSS 방어 (DOMPurify)
+- [ ] 터미널 환경변수 필터링
 
-- **Windows 11** + Git Bash
-- **WSL Ubuntu** (Node.js 미설치 — `curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -` 필요)
-- 프론트엔드: Windows에서 `npm run dev` 실행 가능
-- 백엔드: WSL에서 FastAPI 실행 예정 (Python3 있음)
+---
 
-## 핵심 파일 위치
+## 리눅스 서버에서 시작하기
 
-| 용도 | 경로 |
+```bash
+# 1. Clone + checkout
+git clone https://github.com/k1212gh/linux-web-os.git
+cd linux-web-os
+git checkout feat/portfolio-apps
+
+# 2. 프론트엔드
+cd frontend && npm install && npm run build
+
+# 3. 백엔드
+cd ../backend
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+
+# 4. 환경변수
+cp .env.json.example .env.json
+nano .env.json  # API 키 입력
+
+# 5. 실행
+uvicorn main:app --host 0.0.0.0 --port 8000
+
+# 6. (선택) Ollama 설치
+chmod +x scripts/setup-ollama.sh && ./scripts/setup-ollama.sh
+
+# 7. (선택) Tailscale 원격 접속
+sudo tailscale serve https:443 / http://localhost:8000
+
+# 8. Claude Code에 컨텍스트 전달
+# → 이 파일(SESSION_CONTEXT.md)을 읽게 하세요
+```
+
+### vite.config.js 프록시 포트
+
+현재 `localhost:8001`로 설정됨 (Windows에서 8000이 사용 중이었음).
+리눅스에서는 `localhost:8000`으로 변경 필요:
+```js
+// frontend/vite.config.js
+proxy: { '/api': { target: 'http://localhost:8000' }, '/ws': { target: 'ws://localhost:8000', ws: true } }
+```
+
+---
+
+## 핵심 파일
+
+| 용도 | 파일 |
 |------|------|
-| 전체 계획서 | `ENHANCEMENT_PLAN.md` |
-| QA 테스트 | `TEST_PROMPT.md` |
 | 앱 등록 | `frontend/src/components/Desktop.jsx` (APPS 배열) |
 | 윈도우 상태 | `frontend/src/store/windowStore.js` |
+| OS 스타일 | `frontend/src/store/osStyleStore.js` |
 | 스타일 | `frontend/src/styles/global.css` |
+| 백엔드 진입점 | `backend/main.py` |
 | 포트폴리오 데이터 | `frontend/src/data/profile.js`, `projects.js` |
-| 포트폴리오 앱 | `frontend/src/components/apps/{Profile,Resume,Projects,Blog,Timeline,Contact}.jsx` |
-| 기존 앱 | `frontend/src/components/apps/{Terminal,VSCode,Claude,SystemMonitor,Kasm,Settings}.jsx` |
-
-## 완료된 Sprint
-
-| Sprint | 내용 | 커밋 |
-|--------|------|------|
-| 0 | 포트폴리오 앱 6개 + QA 테스트 + 버그 수정 | 3 커밋 |
-| 1 | Claude Code 앱 + 개발도구(Git/CI·CD/파일) + 유틸(메모/계산기) | 1 커밋 |
-| 1b | OS 기능 (부팅/우클릭/단축키/전체화면) + LLM 연동(Ollama) | 1 커밋 |
-| 1c | 윈도우 UX (드래그 복원, 타이틀바 메뉴, 스냅) | 3 커밋 |
-| Sprint 1 | 디자인/UX 오버홀 (닫기 애니메이션, Dock magnification, 스냅 프리뷰, 다크/라이트 테마, 배경 애니메이션) | 1 커밋 |
-| Sprint 2 | 콘텐츠 채우기 (프로필 10스킬, 프로젝트 7개, 블로그 5개, 타임라인 9개) | 1 커밋 |
-| Sprint 6 | README 완성 | 1 커밋 |
-
-## 다음 세션에서 할 일 (우선순위 순)
-
-### 1. 하네스(Harness) 엔지니어링 시스템 구현 ⭐ (핵심)
-
-**개념**: AI 에이전트가 안전하고 일관되게 코딩하도록 시스템 환경을 설계하는 프레임워크.
-
-**4대 요소**:
-1. `docs/` — PRD, 아키텍처, ADR 등 컨텍스트 문서
-2. `CLAUDE.md` — 프로젝트 규칙/헌법
-3. 실행 엔진 — `/harness` 명령으로 Phase별 자동 실행 + 상태 관리
-4. Hooks — TDD 강제, 위험 명령 차단, 서킷 브레이커
-
-**참고 자료**:
-- 노션: https://raspy-roll-970.notion.site/340f7725c9d98176b68bd31c823c7540
-- 핵심: 분류기 → 컨텍스트 관리자 → 실행 루프 → 워커 격리 4단계 파이프라인
-
-**AgentOS에 통합 방법**:
-- 새 앱: "Harness Manager" — 프로젝트별 하네스 설정 UI
-- 백엔드: harness 실행 엔진 (Phase별 자동 실행)
-- Claude Code 앱과 연동: 하네스 규칙 하에서 에이전트 실행
-- CI/CD 앱과 연동: 하네스 검증 게이트
-
-### 2. WSL 환경 세팅
-```bash
-# WSL에서 수동 실행 필요:
-sudo apt-get update && sudo apt-get install -y nodejs npm
-cd /mnt/c/Users/SSAFY/Desktop/ToyPJT/linux-web-os-analysis
-cd backend && python3 -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt
-uvicorn main:app --reload --port 8000
-```
-
-### 3. 실제 백엔드 연동 테스트
-- 터미널 PTY, Claude Code, Git 대시보드, 파일 매니저
-
-### 4. main 머지 + GitHub Pages 배포
-
-## 참고: 바닐라 JS 버전
-
-`../test/` 폴더에 첫 번째 프로토타입이 있음 (순수 HTML/CSS/JS). CSS 테마와 데이터 구조 참고용으로 보존.
-`../test/react-app/` 에 React 전환 시도가 있으나 **사용하지 않음** — linux-web-os 기반으로 진행.
+| 하네스 설정 | `.claude/settings.json`, `.claude/rules/`, `.claude/commands/` |
+| 프로젝트 헌법 | `CLAUDE.md` |
+| 전체 계획 | `ENHANCEMENT_PLAN.md`, `IMPROVEMENT_PLAN.md` |
+| 다음 작업 | `NEXT_SESSION_PLAN.md` |
+| 배포 가이드 | `docs/DEPLOYMENT.md` |
+| QA 테스트 | `TEST_PROMPT.md` |
