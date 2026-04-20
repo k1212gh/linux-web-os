@@ -17,6 +17,9 @@ import MemoApp from './apps/Memo'
 import CalculatorApp from './apps/Calculator'
 import LLMDashboardApp from './apps/LLMDashboard'
 import HarnessManagerApp from './apps/HarnessManager'
+import InfraDashboardApp from './apps/InfraDashboard'
+import DockerApp from './apps/Docker'
+import ObsidianViewerApp from './apps/ObsidianViewer'
 import ProfileApp from './apps/Profile'
 import ResumeApp from './apps/Resume'
 import ProjectsApp from './apps/Projects'
@@ -34,6 +37,9 @@ const APPS = [
   { id: 'kasm', title: '원격 데스크톱', icon: '🖥', label: 'Desktop', gradient: 'linear-gradient(135deg, #1a1a2e, #16213e)', component: KasmApp },
   { id: 'git', title: 'Git 대시보드', icon: '🔀', label: 'Git', gradient: 'linear-gradient(135deg, #f97316, #c2410c)', component: GitDashboardApp },
   { id: 'cicd', title: 'CI/CD', icon: '🔨', label: 'CI/CD', gradient: 'linear-gradient(135deg, #14b8a6, #0f766e)', component: CICDApp },
+  { id: 'infra', title: '인프라', icon: '🏗', label: 'Infra', gradient: 'linear-gradient(135deg, #0ea5e9, #0369a1)', component: InfraDashboardApp },
+  { id: 'docker', title: 'Docker', icon: '🐳', label: 'Docker', gradient: 'linear-gradient(135deg, #2496ed, #1d6fa5)', component: DockerApp },
+  { id: 'obsidian', title: 'Obsidian', icon: '🗒', label: 'Obsidian', gradient: 'linear-gradient(135deg, #6b46c1, #4c1d95)', component: ObsidianViewerApp },
   { id: 'filemanager', title: '파일 관리자', icon: '📂', label: 'Files', gradient: 'linear-gradient(135deg, #eab308, #a16207)', component: FileManagerApp },
   { id: 'harness', title: '하네스', icon: '🔧', label: 'Harness', gradient: 'linear-gradient(135deg, #a855f7, #7e22ce)', component: HarnessManagerApp },
   { id: 'memo', title: '메모장', icon: '📒', label: 'Memo', gradient: 'linear-gradient(135deg, #fbbf24, #d97706)', component: MemoApp },

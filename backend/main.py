@@ -20,6 +20,7 @@ from routers import cicd as cicd_router
 from routers import files as files_router
 from routers import harness as harness_router
 from routers import obsidian as obsidian_router
+from routers import infra as infra_router
 
 CONFIG_PATH = Path(__file__).parent / ".env.json"
 
@@ -61,6 +62,7 @@ app.include_router(cicd_router.router,  prefix="/api/cicd",    tags=["cicd"])
 app.include_router(files_router.router, prefix="/api/files",   tags=["files"])
 app.include_router(harness_router.router, prefix="/api/harness", tags=["harness"])
 app.include_router(obsidian_router.router, prefix="/api/obsidian", tags=["obsidian"])
+app.include_router(infra_router.router, prefix="/api/infra", tags=["infra"])
 
 # Serve built frontend
 STATIC_DIR = Path(__file__).parent / "static"
