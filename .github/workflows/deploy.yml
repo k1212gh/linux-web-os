@@ -30,7 +30,7 @@ jobs:
         run: |
           cd frontend
           npm ci
-          npx vite build --base=/linux-web-os/
+          ./node_modules/.bin/vite build --base=/linux-web-os/
         env:
           NODE_ENV: production
 
