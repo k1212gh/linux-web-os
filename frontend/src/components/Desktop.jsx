@@ -20,6 +20,9 @@ import HarnessManagerApp from './apps/HarnessManager'
 import InfraDashboardApp from './apps/InfraDashboard'
 import DockerApp from './apps/Docker'
 import ObsidianViewerApp from './apps/ObsidianViewer'
+import JenkinsApp from './apps/Jenkins'
+import GrafanaApp from './apps/Grafana'
+import PortainerApp from './apps/Portainer'
 import ProfileApp from './apps/Profile'
 import ResumeApp from './apps/Resume'
 import ProjectsApp from './apps/Projects'
@@ -39,6 +42,9 @@ const APPS = [
   { id: 'cicd', title: 'CI/CD', icon: '🔨', label: 'CI/CD', gradient: 'linear-gradient(135deg, #14b8a6, #0f766e)', component: CICDApp },
   { id: 'infra', title: '인프라', icon: '🏗', label: 'Infra', gradient: 'linear-gradient(135deg, #0ea5e9, #0369a1)', component: InfraDashboardApp },
   { id: 'docker', title: 'Docker', icon: '🐳', label: 'Docker', gradient: 'linear-gradient(135deg, #2496ed, #1d6fa5)', component: DockerApp },
+  { id: 'jenkins', title: 'Jenkins', icon: '⚙', label: 'Jenkins', gradient: 'linear-gradient(135deg, #d33833, #a1201b)', component: JenkinsApp },
+  { id: 'grafana', title: 'Grafana', icon: '📊', label: 'Grafana', gradient: 'linear-gradient(135deg, #f46800, #a04100)', component: GrafanaApp },
+  { id: 'portainer', title: 'Portainer', icon: '🐋', label: 'Portainer', gradient: 'linear-gradient(135deg, #13bef9, #0275d8)', component: PortainerApp },
   { id: 'obsidian', title: 'Obsidian', icon: '🗒', label: 'Obsidian', gradient: 'linear-gradient(135deg, #6b46c1, #4c1d95)', component: ObsidianViewerApp },
   { id: 'filemanager', title: '파일 관리자', icon: '📂', label: 'Files', gradient: 'linear-gradient(135deg, #eab308, #a16207)', component: FileManagerApp },
   { id: 'harness', title: '하네스', icon: '🔧', label: 'Harness', gradient: 'linear-gradient(135deg, #a855f7, #7e22ce)', component: HarnessManagerApp },
