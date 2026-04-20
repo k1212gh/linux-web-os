@@ -14,10 +14,15 @@ CONFIG_PATH = Path(__file__).parent.parent / ".env.json"
 
 ALLOWED_KEYS = {
     "ANTHROPIC_API_KEY",
+    "GEMINI_API_KEY",
+    "OPENAI_API_KEY",
     "VSCODE_TUNNEL_URL",
     "KASM_URL",
     "FILEBROWSER_URL",
     "HSA_OVERRIDE_GFX_VERSION",
+    "PROJECTS_BASE",
+    "OBSIDIAN_VAULT",
+    "LLM_DASHBOARD_URL",
 }
 
 

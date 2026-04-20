@@ -41,3 +41,12 @@ async def filebrowser_service():
     url = os.environ.get("FILEBROWSER_URL", "http://localhost:8081")
     ok = await _is_reachable(url)
     return {"url": url if ok else "", "status": "ok" if ok else "unreachable"}
+
+
+@router.get("/llm-dashboard")
+async def llm_dashboard_service(url: str = ""):
+    """Health check for Open WebUI / Ollama Web UI / text-generation-webui."""
+    if not url:
+        url = os.environ.get("LLM_DASHBOARD_URL", "http://localhost:3000")
+    ok = await _is_reachable(url)
+    return {"url": url if ok else "", "status": "ok" if ok else "unreachable"}
