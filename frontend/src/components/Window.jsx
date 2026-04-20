@@ -157,6 +157,7 @@ export default function Window({ id, title, icon, children }) {
                 {['close', 'min', 'max'].map(type => (
                   <button key={type} style={btnStyle(type)}
                     onMouseEnter={() => setBtnHover(type)} onMouseLeave={() => setBtnHover(null)}
+                    onMouseDown={e => e.stopPropagation()}
                     onClick={e => { e.stopPropagation(); if (type === 'close') close(id); if (type === 'min') minimize(id); if (type === 'max') maximize(id) }}
                   >{btnIcon(type)}</button>
                 ))}
@@ -182,6 +183,7 @@ export default function Window({ id, title, icon, children }) {
                 ].map(b => (
                   <button key={b.type}
                     onMouseEnter={() => setBtnHover(b.type)} onMouseLeave={() => setBtnHover(null)}
+                    onMouseDown={e => e.stopPropagation()}
                     onClick={e => { e.stopPropagation(); if (b.type === 'close') close(id); if (b.type === 'min') minimize(id); if (b.type === 'max') maximize(id) }}
                     style={{
                       width: b.w, height: '100%', border: 'none', cursor: 'pointer',
@@ -204,13 +206,13 @@ export default function Window({ id, title, icon, children }) {
                 <span style={{ fontSize: 12.5, color: isActive ? 'var(--text-primary)' : 'var(--text-muted)', fontWeight: 500 }}>{title}</span>
               </div>
               <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-                <button onClick={e => { e.stopPropagation(); minimize(id) }}
+                <button onMouseDown={e => e.stopPropagation()} onClick={e => { e.stopPropagation(); minimize(id) }}
                   onMouseEnter={() => setBtnHover('min')} onMouseLeave={() => setBtnHover(null)}
                   style={{ width: 24, height: 24, borderRadius: 12, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, background: btnHover === 'min' ? 'var(--bg-hover)' : 'transparent', color: 'var(--text-muted)', transition: 'background 0.1s' }}>─</button>
-                <button onClick={e => { e.stopPropagation(); maximize(id) }}
+                <button onMouseDown={e => e.stopPropagation()} onClick={e => { e.stopPropagation(); maximize(id) }}
                   onMouseEnter={() => setBtnHover('max')} onMouseLeave={() => setBtnHover(null)}
                   style={{ width: 24, height: 24, borderRadius: 12, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, background: btnHover === 'max' ? 'var(--bg-hover)' : 'transparent', color: 'var(--text-muted)', transition: 'background 0.1s' }}>{win.isMaximized ? '❐' : '□'}</button>
-                <button onClick={e => { e.stopPropagation(); close(id) }}
+                <button onMouseDown={e => e.stopPropagation()} onClick={e => { e.stopPropagation(); close(id) }}
                   onMouseEnter={() => setBtnHover('close')} onMouseLeave={() => setBtnHover(null)}
                   style={{ width: 24, height: 24, borderRadius: 12, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, background: btnHover === 'close' ? '#c42b1c' : 'transparent', color: btnHover === 'close' ? '#fff' : 'var(--text-muted)', transition: 'all 0.1s' }}>✕</button>
               </div>
