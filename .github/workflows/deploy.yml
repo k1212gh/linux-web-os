@@ -29,10 +29,8 @@ jobs:
       - name: Install & Build
         run: |
           cd frontend
-          npm ci
+          npm ci --include=dev
           ./node_modules/.bin/vite build --base=/linux-web-os/
-        env:
-          NODE_ENV: production
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
