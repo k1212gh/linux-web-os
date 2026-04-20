@@ -11,6 +11,7 @@ export default function Taskbar({ apps, onStartClick, startMenuOpen }) {
   const [date, setDate] = useState('')
   const [sysInfo, setSysInfo] = useState(null)
   const [mouseX, setMouseX] = useState(null)
+  const [hoveredId, setHoveredId] = useState(null)
   const dockRef = useRef(null)
   const iconRefs = useRef({})
 
@@ -88,7 +89,7 @@ export default function Taskbar({ apps, onStartClick, startMenuOpen }) {
       <div
         ref={dockRef}
         onMouseMove={e => setMouseX(e.clientX)}
-        onMouseLeave={() => setMouseX(null)}
+        onMouseLeave={() => { setMouseX(null); setHoveredId(null) }}
         style={{
           display: 'flex', alignItems: 'flex-end', gap: 3,
           background: 'var(--bg-taskbar)',
@@ -115,6 +116,8 @@ export default function Taskbar({ apps, onStartClick, startMenuOpen }) {
               <button
                 ref={el => iconRefs.current[appId] = el}
                 onClick={() => handleClick(appId)}
+                onMouseEnter={() => setHoveredId(appId)}
+                onMouseLeave={() => setHoveredId(prev => prev === appId ? null : prev)}
                 style={{
                   width: 40, height: 40, borderRadius: 10,
                   background: app.gradient,
@@ -143,8 +146,8 @@ export default function Taskbar({ apps, onStartClick, startMenuOpen }) {
                 }} />
               )}
 
-              {/* Tooltip */}
-              {scale > 1.15 && (
+              {/* Tooltip — only for directly hovered icon */}
+              {hoveredId === appId && (
                 <div style={{
                   position: 'absolute', bottom: '100%', marginBottom: 8,
                   padding: '4px 10px', borderRadius: 6,
