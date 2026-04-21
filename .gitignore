@@ -8,9 +8,15 @@ build/
 
 # Node
 node_modules/
-frontend/node_modules/
+**/node_modules/
+.pnpm-store/
 
-# Built frontend (served from backend/static)
+# Next.js / Vite builds
+.next/
+out/
+apps/**/.next/
+apps/**/out/
+apps/**/dist/
 backend/static/
 
 # Secrets — NEVER commit

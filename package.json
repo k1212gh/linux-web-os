@@ -1,0 +1,17 @@
+{
+  "name": "linux-web-os",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Personal Web OS portfolio + workstation (public Next.js on Vercel, private full-featured on home Linux + Tailscale)",
+  "scripts": {
+    "dev:workstation": "pnpm -F @k1212gh/workstation dev",
+    "dev:public": "pnpm -F @k1212gh/public dev",
+    "build:workstation": "pnpm -F @k1212gh/workstation build",
+    "build:public": "pnpm -F @k1212gh/public build",
+    "backend": "cd backend && uvicorn main:app --reload --host 127.0.0.1 --port 8000"
+  },
+  "packageManager": "pnpm@10.33.0",
+  "engines": {
+    "node": ">=20"
+  }
+}
