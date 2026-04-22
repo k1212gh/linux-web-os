@@ -1,0 +1,23 @@
+[Unit]
+Description=AgentOS Next.js Workstation (private, Tailscale)
+After=network-online.target agentos-backend.service
+Wants=agentos-backend.service
+
+[Service]
+Type=simple
+User=k1212gh
+WorkingDirectory=/home/k1212gh/linux-web-os/apps/workstation
+Environment="NODE_ENV=production"
+Environment="PORT=3000"
+Environment="BACKEND_URL=http://127.0.0.1:8000"
+ExecStart=/usr/bin/node /home/k1212gh/linux-web-os/node_modules/next/dist/bin/next start -p 3000
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

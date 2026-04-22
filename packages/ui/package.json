@@ -1,0 +1,20 @@
+{
+  "name": "@k1212gh/ui",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Shared Web OS UI components (Window, Taskbar, Desktop, stores)",
+  "main": "./src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./stores/*": "./src/stores/*.js",
+    "./*": "./src/*.jsx"
+  },
+  "peerDependencies": {
+    "react": ">=18",
+    "react-dom": ">=18"
+  },
+  "dependencies": {
+    "react-rnd": "^10.4.10",
+    "zustand": "^4.5.2"
+  }
+}

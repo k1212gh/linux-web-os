@@ -1,0 +1,9 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "nextjs",
+  "buildCommand": "cd ../.. && npm install --no-audit --no-fund && cd apps/public && npx next build",
+  "outputDirectory": "out",
+  "installCommand": "echo 'Skipping default install; buildCommand handles monorepo install'",
+  "trailingSlash": true,
+  "cleanUrls": false
+}

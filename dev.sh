@@ -24,11 +24,11 @@ HSA_OVERRIDE_GFX_VERSION=10.3.0 uvicorn main:app --reload --port 8000 &
 BACKEND_PID=$!
 cd ..
 
-# Start frontend dev server
-cd frontend
+# Start workstation frontend dev server
+cd apps/workstation
 npm run dev &
 FRONTEND_PID=$!
-cd ..
+cd ../..
 
 # Cleanup on exit
 trap "kill $BACKEND_PID $FRONTEND_PID 2>/dev/null; echo '🛑 Stopped'" EXIT
