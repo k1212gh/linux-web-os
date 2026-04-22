@@ -3,6 +3,7 @@ const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:8000'
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  transpilePackages: ['@k1212gh/ui', '@k1212gh/apps-public', '@k1212gh/apps-private'],
 
   async rewrites() {
     return [

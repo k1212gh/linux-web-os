@@ -3,17 +3,16 @@
   "version": "0.0.1",
   "private": true,
   "description": "Private apps (Tailscale-only): terminal, claude, docker, jenkins, files, etc. Require FastAPI backend.",
-  "main": "./src/index.ts",
-  "types": "./src/index.ts",
+  "main": "./src/index.js",
   "exports": {
-    ".": "./src/index.ts",
-    "./*": "./src/*.tsx"
+    ".": "./src/index.js",
+    "./*": "./src/*.jsx"
   },
   "peerDependencies": {
     "react": ">=18",
     "react-dom": ">=18"
   },
   "dependencies": {
-    "@k1212gh/ui": "workspace:*"
+    "@k1212gh/ui": "*"
   }
 }

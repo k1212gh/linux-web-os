@@ -3,6 +3,11 @@
   "version": "1.0.0",
   "private": true,
   "description": "Personal Web OS portfolio + workstation (public Next.js on Vercel, private full-featured on home Linux + Tailscale)",
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "packages/apps/*"
+  ],
   "scripts": {
     "dev:workstation": "pnpm -F @k1212gh/workstation dev",
     "dev:public": "pnpm -F @k1212gh/public dev",
