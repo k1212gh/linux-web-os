@@ -23,6 +23,8 @@ backend/static/
 backend/.env.json
 .env
 *.key
+deploy/secrets/
+deploy/data/
 
 # OS
 .DS_Store

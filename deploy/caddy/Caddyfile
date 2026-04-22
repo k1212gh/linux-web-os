@@ -1,0 +1,43 @@
+# AgentOS Caddy — Tailscale 내부용 리버스 프록시
+# 파일 배치: /etc/caddy/Caddyfile
+# 외부망 바인딩 없음. Tailscale IP(100.x.x.x) 또는 MagicDNS만 허용.
+#
+# Tailscale serve로 MagicDNS 주소에 자동 HTTPS 부여됨.
+# Caddy는 그 안에서 내부 프록시만 담당.
+
+{
+    # 공인 인증서 발급 시도 안 함
+    auto_https off
+    admin off
+}
+
+# Tailscale MagicDNS 호스트명 (예: linux-home.tail-XXXX.ts.net)
+# 환경변수 TAILSCALE_HOSTNAME 로 대체하거나 직접 수정
+:80 {
+    bind 127.0.0.1
+
+    # FastAPI 백엔드: /api, /ws, /proxy
+    handle /api/* {
+        reverse_proxy 127.0.0.1:8000
+    }
+    handle /ws/* {
+        reverse_proxy 127.0.0.1:8000 {
+            header_up Host {host}
+            header_up X-Forwarded-For {remote_host}
+        }
+    }
+    handle /proxy/* {
+        reverse_proxy 127.0.0.1:8000
+    }
+
+    # 나머지: Next.js 워크스테이션
+    handle {
+        reverse_proxy 127.0.0.1:3000
+    }
+
+    # 접속 로그
+    log {
+        output file /var/log/caddy/agentos.log
+        format json
+    }
+}
