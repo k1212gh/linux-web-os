@@ -9,12 +9,14 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@k1212gh/ui": "*",
     "@k1212gh/apps-public": "*",
+    "@k1212gh/ui": "*",
     "gray-matter": "^4.0.3",
     "next": "^14.2.15",
     "react": "^18.3.0",
-    "react-dom": "^18.3.0"
+    "react-dom": "^18.3.0",
+    "remark": "^15.0.1",
+    "remark-html": "^16.0.1"
   },
   "devDependencies": {
     "@types/node": "^20.12.12",
